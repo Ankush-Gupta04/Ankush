@@ -1,698 +1,1871 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Ankush Gupta</title>
-  <meta content="" name="description">
-  <meta content="" name="keywords">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ankush Gupta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ═══ THEME VARIABLES — New Pastel Palette ═══ */
+:root[data-theme="dark"] {
+  --bg: #111827;
+  --surface: #1F2937;
+  --surface2: #273347;
+  --border: rgba(167,183,212,0.10);
+  --text: #F9FAFB;
+  --text-soft: rgba(249,250,251,0.78);
+  --muted: #C7D2FE;
+  --accent: #A5B4FC;
+  --accent2: #93C5FD;
+  --accent3: #C4B5FD;
+  --green: #6EE7B7;
+  --link-color: #93C5FD;
+  --nav-bg: rgba(17,24,39,0.95);
+  --tag-bg: rgba(165,180,252,0.10);
+  --card-hover: rgba(165,180,252,0.06);
+  --shadow: rgba(0,0,0,0.45);
+  --photo-dark: block;
+  --photo-light: none;
+  --road-color: #2D3748;
+  --road-line: rgba(165,180,252,0.25);
+  --road-glow: rgba(165,180,252,0.08);
+}
+:root[data-theme="light"] {
+  --bg: #FAF7F2;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE8;
+  --border: rgba(0,0,0,0.09);
+  --text: #1F2937;
+  --text-soft: rgba(31,41,55,0.72);
+  --muted: #6B7280;
+  --accent: #7CAEDC;
+  --accent2: #5B9BD5;
+  --accent3: #9B8ECC;
+  --green: #3A9E7A;
+  --link-color: #5B9BD5;
+  --nav-bg: rgba(250,247,242,0.96);
+  --tag-bg: rgba(124,174,220,0.08);
+  --card-hover: rgba(124,174,220,0.05);
+  --shadow: rgba(0,0,0,0.10);
+  --photo-dark: none;
+  --photo-light: block;
+  --road-color: #E7D8C9;
+  --road-line: rgba(124,174,220,0.35);
+  --road-glow: rgba(124,174,220,0.06);
+}
 
-  <!-- Favicons -->
-  <link href="assets/img/icon.png" rel="icon">
-  <link href="assets/img/icon.png" rel="apple-touch-icon">
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 999; opacity: 0.3;
+}
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+/* ═══ NAV ═══ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 3.5rem;
+  background: var(--nav-bg); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.4s ease; gap: 1rem;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif; font-size: 1.05rem;
+  color: var(--accent); letter-spacing: 0.05em; cursor: pointer; flex-shrink: 0;
+}
+.nav-tabs {
+  display: flex; gap: 0; list-style: none;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 3px; padding: 3px; flex-wrap: wrap;
+}
+.nav-tab {
+  padding: 0.38rem 1rem; border-radius: 2px; font-size: 0.72rem;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  color: var(--muted); font-family: 'DM Mono', monospace;
+  transition: all 0.2s; border: none; background: none; white-space: nowrap;
+}
+.nav-tab:hover { color: var(--accent); }
+.nav-tab.active { background: var(--tag-bg); color: var(--accent); border: 1px solid rgba(165,180,252,0.25); }
+.nav-right { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.nav-cv {
+  font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
+  color: var(--muted); text-decoration: none; padding: 0.38rem 0.9rem;
+  border: 1px solid var(--border); border-radius: 2px; transition: all 0.2s; text-transform: uppercase;
+}
+.nav-cv:hover { border-color: var(--accent); color: var(--accent); }
+.theme-toggle {
+  width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 2px;
+  background: var(--surface); color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; font-size: 0.9rem; flex-shrink: 0;
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+/* ═══ PAGES ═══ */
+.page { display: none; padding-top: 5rem; min-height: 100vh; }
+.page.active { display: block; }
+.page.fade-in { animation: fadeIn 0.35s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  <!-- Main CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
+/* ═══ ABOUT PAGE ═══ */
+#page-about { display: none; padding: 5rem 3.5rem 4rem; }
+#page-about.active { display: grid; grid-template-columns: 1fr 1.2fr; gap: 5rem; align-items: start; }
 
-  <!-- =======================================================
-  * Template Name: iPortfolio
-  * Template URL: https://bootstrapmade.com/iportfolio-bootstrap-portfolio-websites-template/
-  * Updated: Jun 14 2024 with Bootstrap v5.3.3
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+.about-left { display: flex; flex-direction: column; gap: 1.8rem; }
+.about-photo-wrap {
+  position: relative; width: 260px; height: auto; flex-shrink: 0;
+}
+.about-photo-wrap::before {
+  content: ''; position: absolute; inset: -8px;
+  border: 1px solid rgba(165,180,252,0.3); border-radius: 2px; transform: rotate(2deg);
+}
+.photo-dark { display: var(--photo-dark); width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+.photo-light { display: var(--photo-light); width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+.about-photo-placeholder {
+  width: 100%; height: 100%; background: var(--surface2); border-radius: 2px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted);
+  letter-spacing: 0.1em; border: 1px solid var(--border); gap: 0.4rem;
+}
+.scholar-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  padding: 1.2rem 1.6rem; width: 260px;
+}
+.scholar-card-title {
+  font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.scholar-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.scholar-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+.stat { text-align: center; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--accent); display: block; }
+.stat-label { font-size: 0.65rem; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+
+.social-row { display: flex; gap: 0.7rem; }
+.social-link {
+  width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 2px;
+  display: flex; align-items: center; justify-content: center; color: var(--muted);
+  text-decoration: none; transition: all 0.2s;
+}
+.social-link:hover { border-color: var(--accent); color: var(--accent); }
+.social-link svg { width: 16px; height: 16px; }
+
+.about-right {}
+.page-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.page-eyebrow::before { content: '//'; opacity: 0.4; }
+h1 {
+  font-family: 'Playfair Display', serif; font-size: clamp(2.8rem, 4vw, 4.2rem);
+  font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 0.4rem;
+}
+.hero-sub { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.2rem; color: var(--muted); margin-bottom: 1.8rem; }
+.about-bio p { font-size: 0.95rem; color: var(--text-soft); line-height: 1.85; margin-bottom: 1.1rem; }
+.about-bio strong { color: var(--accent); font-weight: 500; }
+.about-bio a { color: var(--link-color); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+.about-bio a:hover { color: var(--accent); }
+
+.info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-top: 0; }
+.info-block { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.2rem 1.4rem; }
+.info-block-title { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.8rem; }
+.info-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+.info-list li { font-size: 0.82rem; color: var(--text-soft); display: flex; align-items: flex-start; gap: 0.4rem; }
+.info-list li::before { content: '→'; color: var(--accent); flex-shrink: 0; font-size: 0.72rem; margin-top: 0.15rem; }
+
+.hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+.btn {
+  padding: 0.6rem 1.4rem; border-radius: 2px; font-size: 0.78rem; letter-spacing: 0.1em;
+  text-transform: uppercase; cursor: pointer; text-decoration: none; transition: all 0.2s;
+  font-family: 'DM Mono', monospace; display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.btn-primary { background: var(--accent); color: var(--bg); border: 1px solid var(--accent); }
+.btn-primary:hover { background: transparent; color: var(--accent); }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ═══ JOURNEY PAGE ═══ */
+#page-journey { padding: 5rem 3.5rem 4rem; display: none; }
+#page-journey.active { display: block; }
+
+.page-header { margin-bottom: 2.5rem; }
+.page-header h2 {
+  font-family: 'Playfair Display', serif; font-size: clamp(2rem, 3vw, 2.8rem);
+  font-weight: 700; line-height: 1.1; margin-bottom: 0.5rem;
+}
+.page-header p { color: var(--muted); font-size: 0.92rem; max-width: 560px; line-height: 1.8; }
+.section-label {
+  font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.section-label::before { content: '§'; font-family: serif; opacity: 0.5; }
+
+/* Journey Tabs */
+.journey-tabs {
+  display: flex; gap: 0; margin-bottom: 2.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 3px; padding: 3px; width: fit-content;
+}
+.journey-tab {
+  padding: 0.42rem 1.2rem; border-radius: 2px;
+  font-size: 0.72rem; font-family: 'DM Mono', monospace;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; color: var(--muted); background: none; border: none; transition: all 0.2s;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.journey-tab:hover { color: var(--accent); }
+.journey-tab.active { background: var(--tag-bg); color: var(--accent); border: 1px solid rgba(165,180,252,0.25); }
+.journey-tab .tab-dot { width: 6px; height: 6px; border-radius: 50%; }
+.journey-tab[data-journey="education"] .tab-dot { background: var(--green); }
+.journey-tab[data-journey="research"] .tab-dot { background: var(--accent); }
+.journey-tab[data-journey="industry"] .tab-dot { background: var(--accent2); }
+
+/* ═══ JOURNEY ROAD LAYOUT ═══ */
+.journey-road-wrap {
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+  gap: 0;
+  max-width: 1100px;
+  position: relative;
+  margin: 0 auto;
+}
+
+/* Central road spine */
+.road-spine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 0.5rem 0;
+}
+.road-track {
+  width: 44px;
+  background: var(--road-color);
+  border-radius: 4px;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  border: 1px solid var(--border);
+}
+/* Road dashes */
+.road-track::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 3px;
+  height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--road-line) 0px,
+    var(--road-line) 18px,
+    transparent 18px,
+    transparent 34px
+  );
+  animation: roadScroll 3s linear infinite;
+}
+@keyframes roadScroll {
+  from { background-position: 0 0; }
+  to { background-position: 0 52px; }
+}
+/* Road glow */
+.road-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--road-glow);
+  pointer-events: none;
+}
+
+/* Journey node on road */
+.road-node {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  z-index: 2;
+  cursor: default;
+  transition: transform 0.2s;
+  background: var(--surface);
+}
+.road-node:hover { transform: translateX(-50%) scale(1.2); }
+.road-node.research { border-color: var(--accent); box-shadow: 0 0 8px rgba(165,180,252,0.3); }
+.road-node.industry { border-color: var(--accent2); box-shadow: 0 0 8px rgba(147,197,253,0.3); }
+.road-node.education { border-color: var(--green); box-shadow: 0 0 8px rgba(110,231,183,0.3); }
+.road-node.upcoming { border-color: var(--accent3); box-shadow: 0 0 8px rgba(196,181,253,0.3); }
+
+/* connector from card to road */
+.road-connector {
+  height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+  align-self: center;
+  transition: background 0.2s;
+}
+.journey-row {
+  display: contents;
+}
+/* Left column card */
+.journey-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.journey-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.journey-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 130px;
+  padding: 0.6rem 0;
+}
+.journey-slot.empty {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Journey Cards new style */
+.journey-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  opacity: 0;
+  transform: translateY(14px);
+  position: relative;
+}
+.journey-card.revealed { animation: cardIn 0.4s forwards; }
+@keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+.journey-card:hover {
+  border-color: rgba(165,180,252,0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+/* Card side accent bar */
+.journey-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 15%; bottom: 15%;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.journey-card[data-type="industry"]::before { background: var(--accent2); }
+.journey-card[data-type="education"]::before { background: var(--green); }
+.journey-card[data-type="upcoming"]::before { background: var(--accent3); }
+
+.jc-year { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+.jc-type {
+  display: inline-block; padding: 0.16rem 0.5rem; border-radius: 2px;
+  font-size: 0.58rem; font-family: 'DM Mono', monospace; letter-spacing: 0.1em;
+  text-transform: uppercase; border: 1px solid; margin-bottom: 0.5rem;
+}
+.type-research { border-color: var(--accent); color: var(--accent); }
+.type-industry { border-color: var(--accent2); color: var(--accent2); }
+.type-education { border-color: var(--green); color: var(--green); }
+.type-upcoming { border-color: var(--accent3); color: var(--accent3); }
+
+.jc-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; margin-bottom: 0.2rem; line-height: 1.3; }
+.jc-org { font-size: 0.72rem; color: var(--accent); font-family: 'DM Mono', monospace; letter-spacing: 0.03em; margin-bottom: 0.55rem; }
+.jc-desc { font-size: 0.78rem; color: var(--text-soft); line-height: 1.65; }
+.jc-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.65rem; }
+.jc-pill {
+  padding: 0.12rem 0.5rem; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; font-size: 0.6rem; font-family: 'DM Mono', monospace;
+  color: var(--muted); letter-spacing: 0.05em;
+}
+
+/* Road connector dots */
+.connector-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0; align-self: center;
+}
+
+/* ═══ FLAT JOURNEY VIEW (for filter) ═══ */
+.journey-flat { display: none; flex-direction: column; gap: 1rem; max-width: 820px; }
+.journey-flat.active { display: flex; }
+.journey-flat .journey-card {
+  display: grid; grid-template-columns: 130px 1fr; gap: 1.4rem; align-items: start;
+}
+.journey-flat .journey-card-left { display: flex; flex-direction: column; gap: 0.4rem; }
+
+/* ═══ RESEARCH PAGE ═══ */
+#page-research { padding: 5rem 3.5rem 4rem; display: none; }
+#page-research.active { display: block; }
+
+.pub-tabs { display: flex; gap: 0.4rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+.pub-tab {
+  padding: 0.38rem 0.9rem; border-radius: 2px; font-size: 0.72rem;
+  font-family: 'DM Mono', monospace; letter-spacing: 0.08em; border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; transition: all 0.2s; background: none;
+}
+.pub-tab.active, .pub-tab:hover { border-color: var(--accent); color: var(--accent); background: var(--tag-bg); }
+.pub-grid { display: flex; flex-direction: column; gap: 1.4rem; }
+.pub-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  padding: 1.8rem; transition: border-color 0.2s, transform 0.2s; display: none;
+  opacity: 0; transform: translateY(12px);
+}
+.pub-card.visible { display: block; animation: cardIn 0.4s forwards; }
+.pub-card:hover { border-color: rgba(165,180,252,0.35); transform: translateY(-2px); }
+.pub-venue { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+.pub-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin-bottom: 0.55rem; line-height: 1.4; }
+.pub-authors { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.7rem; font-style: italic; }
+.pub-abstract { font-size: 0.84rem; color: var(--text-soft); line-height: 1.7; margin-bottom: 1rem; }
+.pub-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.pub-link {
+  padding: 0.22rem 0.65rem; border: 1px solid var(--border); border-radius: 2px;
+  font-size: 0.65rem; font-family: 'DM Mono', monospace; letter-spacing: 0.1em;
+  color: var(--muted); text-decoration: none; transition: all 0.2s; text-transform: uppercase;
+}
+.pub-link:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ═══ BEYOND PAGE ═══ */
+#page-beyond { padding: 5rem 3.5rem 4rem; display: none; }
+#page-beyond.active { display: block; }
+
+.beyond-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; margin-top: 2.5rem; }
+.beyond-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  padding: 1.8rem; transition: border-color 0.2s, transform 0.2s; cursor: pointer;
+  opacity: 0; transform: translateY(14px); position: relative; overflow: hidden;
+}
+.beyond-card.revealed { animation: cardIn 0.45s forwards; }
+.beyond-card:hover { border-color: rgba(165,180,252,0.35); transform: translateY(-3px); box-shadow: 0 8px 24px var(--shadow); }
+.beyond-card.clickable::after {
+  content: '↗'; position: absolute; top: 1.2rem; right: 1.2rem;
+  font-size: 0.75rem; color: var(--muted); transition: color 0.2s;
+}
+.beyond-card.clickable:hover::after { color: var(--accent); }
+.beyond-icon { font-size: 1.6rem; margin-bottom: 1rem; }
+.beyond-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin-bottom: 0.5rem; }
+.beyond-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.72; }
+
+/* ═══ POETRY MODAL — TILE GALLERY ═══ */
+.creative-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.72); backdrop-filter: blur(10px);
+  align-items: flex-start; justify-content: center;
+  padding: 5rem 2rem 2rem; overflow-y: auto;
+}
+.creative-overlay.open { display: flex; }
+.creative-modal {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+  max-width: 860px; width: 100%; position: relative;
+  animation: modalIn 0.3s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.creative-modal-close {
+  position: absolute; top: 1.2rem; right: 1.2rem;
+  width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 2px;
+  background: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 2;
+}
+.creative-modal-close:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Modal header */
+.modal-header {
+  padding: 2rem 2rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.creative-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; }
+.creative-modal h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 0.5rem; }
+.modal-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 1rem; }
+
+/* Tag filter row */
+.poetry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.poetry-tag {
+  padding: 0.22rem 0.75rem; border: 1px solid var(--border); border-radius: 20px;
+  font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--muted);
+  cursor: pointer; transition: all 0.2s; background: none; text-transform: lowercase;
+  letter-spacing: 0.04em;
+}
+.poetry-tag.active, .poetry-tag:hover { border-color: var(--accent3); color: var(--accent3); background: rgba(196,181,253,0.08); }
+
+/* Tile grid */
+.poetry-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+.poetry-tile {
+  background: var(--bg);
+  padding: 1.6rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  overflow: hidden;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.poetry-tile:hover { background: var(--surface); }
+.poetry-tile.external::after {
+  content: '↗';
+  position: absolute; top: 1rem; right: 1rem;
+  font-size: 0.72rem; color: var(--muted);
+}
+.tile-kind {
+  font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem;
+}
+.tile-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1rem; color: var(--text); margin-bottom: 0.4rem; line-height: 1.3; }
+.tile-preview { font-size: 0.78rem; color: var(--text-soft); line-height: 1.6; flex: 1; }
+.tile-meta { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.8rem; }
+.tile-tag {
+  padding: 0.1rem 0.45rem; border: 1px solid var(--border); border-radius: 20px;
+  font-size: 0.58rem; font-family: 'DM Mono', monospace; color: var(--muted);
+  letter-spacing: 0.04em;
+}
+/* Tile accent color strip at top */
+.poetry-tile::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent3);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.poetry-tile:hover::before { opacity: 1; }
+/* Large background letter */
+.tile-bg-letter {
+  position: absolute; bottom: -0.5rem; right: 0.5rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 5rem; font-weight: 700;
+  color: var(--accent3); opacity: 0.04;
+  pointer-events: none; line-height: 1; user-select: none;
+}
+
+/* Poem reader panel (inline expand) */
+.poem-reader {
+  display: none;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  animation: fadeIn 0.25s ease;
+  position: relative;
+}
+.poem-reader.open { display: block; }
+.poem-reader-close {
+  position: absolute; top: 1.2rem; right: 1.2rem;
+  background: none; border: 1px solid var(--border); border-radius: 2px;
+  color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 0.25rem 0.6rem;
+  font-family: 'DM Mono', monospace; transition: all 0.2s;
+}
+.poem-reader-close:hover { border-color: var(--accent); color: var(--accent); }
+.poem-reader-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.4rem; color: var(--accent3); margin-bottom: 0.3rem; }
+.poem-reader-meta { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-bottom: 1.5rem; letter-spacing: 0.08em; }
+.poem-reader-body { font-size: 0.96rem; color: var(--text-soft); line-height: 2.1; white-space: pre-line; font-family: 'Playfair Display', serif; max-width: 560px; }
+
+/* ═══ UPDATES PAGE ═══ */
+#page-updates { padding: 5rem 3.5rem 4rem; display: none; }
+#page-updates.active { display: block; }
+
+.updates-filter { display: flex; gap: 0.4rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.updates-tag {
+  padding: 0.32rem 0.9rem; border-radius: 2px; font-size: 0.7rem; font-family: 'DM Mono', monospace;
+  letter-spacing: 0.08em; border: 1px solid var(--border); color: var(--muted);
+  cursor: pointer; transition: all 0.2s; background: none; text-transform: uppercase;
+}
+.updates-tag.active, .updates-tag:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(147,197,253,0.06); }
+
+.news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
+.news-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  padding: 1.5rem; transition: border-color 0.2s;
+  opacity: 0; transform: translateY(12px);
+}
+.news-card.revealed { animation: cardIn 0.4s forwards; }
+.news-card:hover { border-color: rgba(147,197,253,0.35); }
+.news-card-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; flex-wrap: wrap; }
+.news-venue { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; color: var(--accent2); text-transform: uppercase; }
+.news-badge {
+  padding: 0.14rem 0.5rem; border-radius: 20px; font-size: 0.58rem;
+  font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid;
+}
+.badge-conference { border-color: var(--accent); color: var(--accent); }
+.badge-education { border-color: var(--green); color: var(--green); }
+.badge-visiting { border-color: var(--accent3); color: var(--accent3); }
+.news-title { font-size: 0.92rem; line-height: 1.5; margin-bottom: 0.5rem; color: var(--text); }
+.news-excerpt { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+.news-source {
+  display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.75rem;
+  font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--accent2);
+  text-decoration: none; letter-spacing: 0.05em; border: 1px solid rgba(147,197,253,0.3);
+  padding: 0.2rem 0.6rem; border-radius: 2px; transition: all 0.2s;
+}
+.news-source:hover { color: var(--text); border-color: var(--accent2); }
+
+/* ═══ CONTACT PAGE ═══ */
+#page-contact { padding: 5rem 3.5rem 4rem; display: none; }
+#page-contact.active { display: grid; grid-template-columns: 1fr 1.1fr; gap: 5rem; align-items: start; }
+
+.contact-text p { font-size: 0.95rem; color: var(--text-soft); line-height: 1.8; margin-bottom: 1rem; }
+.contact-text strong { color: var(--accent); font-weight: 500; }
+.contact-info { display: flex; flex-direction: column; gap: 0.9rem; }
+.contact-item {
+  display: flex; align-items: center; gap: 1rem; padding: 1rem 1.3rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  text-decoration: none; transition: border-color 0.2s, transform 0.15s;
+  opacity: 0; transform: translateX(12px);
+}
+.contact-item.revealed { animation: slideRight 0.4s forwards; }
+@keyframes slideRight { to { opacity: 1; transform: translateX(0); } }
+.contact-item:hover { border-color: var(--accent); transform: translateX(3px); }
+.contact-item-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 0.12rem; }
+.contact-item-value { font-size: 0.86rem; color: var(--text); }
+.contact-icon { color: var(--accent); flex-shrink: 0; }
+.contact-map-wrap { margin-top: 1.2rem; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: var(--surface); }
+.contact-map-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); }
+#contact-map { height: 200px; width: 100%; }
+
+/* ═══ FOOTER ═══ */
+.page-footer {
+  padding: 2rem 3.5rem; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; margin-top: 3rem;
+}
+.page-footer p { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.04em; }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 900px) {
+  nav { padding: 0.9rem 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+  .nav-tabs { flex-wrap: wrap; }
+  .nav-tab { padding: 0.3rem 0.7rem; font-size: 0.68rem; }
+  #page-about { grid-template-columns: 1fr; padding: 5rem 1.4rem 3rem; display: none; }
+  #page-about.active { display: flex; flex-direction: column; }
+  #page-journey, #page-research, #page-beyond, #page-updates { padding: 5rem 1.4rem 3rem; }
+  #page-contact { grid-template-columns: 1fr; padding: 5rem 1.4rem 3rem; display: none; }
+  #page-contact.active { display: flex; flex-direction: column; }
+  .beyond-grid { grid-template-columns: 1fr 1fr; }
+  .news-grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+  .scholar-card, .about-photo-wrap { width: 100%; }
+  .about-photo-wrap { height: 260px; }
+  .journey-road-wrap { grid-template-columns: 1fr; }
+  .road-spine, .road-connector, .connector-dot { display: none; }
+  .journey-col-left, .journey-col-right { display: flex; flex-direction: column; gap: 0.8rem; }
+  .journey-slot.empty { display: none; }
+  .poetry-tiles { grid-template-columns: 1fr 1fr; }
+  .page-footer { flex-direction: column; gap: 0.4rem; text-align: center; padding: 1.4rem; }
+}
+@media (max-width: 600px) {
+  .beyond-grid { grid-template-columns: 1fr; }
+  .poetry-tiles { grid-template-columns: 1fr; }
+}
+</style>
 </head>
+<body>
 
-<body class="index-page">
+<nav>
+  <div class="nav-logo" onclick="showPage('about')">Ankush Gupta</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-page="about" onclick="showPage('about')">About</button>
+    <button class="nav-tab" data-page="journey" onclick="showPage('journey')">Journey</button>
+    <button class="nav-tab" data-page="research" onclick="showPage('research')">Research</button>
+    <button class="nav-tab" data-page="beyond" onclick="showPage('beyond')">Beyond</button>
+    <button class="nav-tab" data-page="updates" onclick="showPage('updates')">Updates</button>
+    <button class="nav-tab" data-page="contact" onclick="showPage('contact')">Contact</button>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" id="theme-btn">☀️</button>
+    <a href="https://drive.google.com/file/d/1CEiT-ZJarq0FspMWjh4azyNx75rTmXhU/view" target="_blank" class="nav-cv">CV ↗</a>
+  </div>
+</nav>
 
-  <header id="header" class="header d-flex flex-column">
-    <i class="header-toggle d-xl-none bi bi-list"></i>
-
-    <div class="profile-img">
-      <img src="assets/img/ankush.jpg" alt="" class="img-fluid rounded-circle">
+<!-- ═══ ABOUT ═══ -->
+<div id="page-about" class="page active fade-in">
+  <div class="about-left">
+    <div class="about-photo-wrap">
+      <img src="ankush.jpg" class="photo-dark" alt="Ankush Gupta">
+      <img src="ankush_light.jpeg" class="photo-light" alt="Ankush Gupta">
     </div>
 
-    <a href="index.html" class="logo d-flex align-items-center justify-content-center">
-      <!-- Uncomment the line below if you also wish to use an image logo -->
-      <!-- <img src="assets/img/logo.png" alt=""> -->
-      <h1 class="sitename">Ankush Gupta</h1>
-    </a>
-
-    <div class="social-links text-center">
-      <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" class="linkedin"><i class="bi bi-linkedin"></i></a>
-      <a href="https://github.com/Ankush-Gupta04" class="github"><i class="bi bi-github"></i></a>
-      <a href="https://www.instagram.com/g._.ankush/?hl=en" class="instagram"><i class="bi bi-instagram"></i></a>
+    <div class="scholar-card">
+      <div class="scholar-card-title">
+        <span><a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2);text-decoration:none;">Google Scholar</a></span>
+        <span class="scholar-live-dot" title="Stats from profile"></span>
+      </div>
+      <div class="scholar-stats">
+        <div class="stat"><span class="stat-num">19</span><span class="stat-label">Citations</span></div>
+        <div class="stat"><span class="stat-num">3</span><span class="stat-label">h-index</span></div>
+        <div class="stat"><span class="stat-num">0</span><span class="stat-label">i10-index</span></div>
+      </div>
+      <p style="font-size:0.65rem;color:var(--muted);margin-top:0.8rem;font-family:'DM Mono',monospace;">
+        <span style="color:rgba(136,136,136,0.5);margin-left:0.5rem;">last updated Apr 2026</span>
+      </p>
     </div>
 
-    <nav id="navmenu" class="navmenu">
-      <ul>
-        <li><a href="#" class="active"><i class="bi bi-house navicon"></i>Home</a></li>
-        <li><a href="#about"><i class="bi bi-person navicon"></i> About</a></li>
-        <li><a href="#resume"><i class="bi bi-file-earmark-text navicon"></i> Resume</a></li>
-        <li><a href="#portfolio"><i class="bi bi-laptop navicon"></i> Projects</a></li>
-        <li><a href="#services"><i class="bi bi-trophy navicon"></i> Publications & Achievements</a></li>
-        <li><a href="#testimonials"><i class="bi bi-emoji-smile navicon"></i> Volunteer work</a></li>
-        <li><a href="#contact"><i class="bi bi-envelope navicon"></i> Contact</a></li>
+    <div class="social-row">
+      <a class="social-link" href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" title="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+      <a class="social-link" href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" title="Google Scholar">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 100 14 7 7 0 000-14z"/></svg>
+      </a>
+      <a class="social-link" href="https://github.com/Ankush-Gupta04" target="_blank" title="GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      </a>
+      <a class="social-link" href="mailto:ankushg0405@gmail.com" title="Email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8h18v12a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="about-right">
+    <div class="page-eyebrow">PhD Incoming · CS Researcher · Multimodal Learning</div>
+    <h1>Ankush Gupta</h1>
+    <p style="font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;color:var(--muted);margin-bottom:0.8rem;text-transform:uppercase;">He / They</p>
+    <p class="hero-sub">Foundational &amp; Responsible AI</p>
+
+    <div class="about-bio">
+      <p>
+        I am an incoming <strong>PhD student in Computer Science at Purdue University</strong>, working under
+        <strong><a href="https://www.cs.purdue.edu/homes/ab/" target="_blank">Dr. Aniket Bera</a></strong>
+        in the <strong><a href="https://ideas.cs.purdue.edu/" target="_blank">IDEAS Lab</a></strong>.
+        My research broadly focuses on <strong>foundational multimodal responsible AI</strong>, with an emphasis on building robust, and generalizable models.
+      </p>
+      <p>
+        During my undergraduate studies at <strong>IIIT Delhi</strong> (B.Tech CS, 2021–2025), I worked on
+        <strong>multimodal emotion understanding</strong>, <strong>physiological signal modeling</strong>, and
+        <strong>real-world data collection frameworks</strong> with
+        <strong><a href="https://chcc.ai/" target="_blank">Prof. Pushpendra Singh</a></strong> and
+        Prof. Mohan Kumar. I also worked on <strong>scholarly recommendation systems</strong> using structured representations and graph-based methods with
+        <strong><a href="https://ads-ai.github.io/" target="_blank">Prof. Mukesh Mohania</a></strong>.
+        This work led to publications at <strong>NeurIPS 2024 &amp; 2025</strong>, <strong>ACM IMWUT 2025</strong>, and <strong>ACM India HCI 2023</strong>.
+      </p>
+      <p>
+        I have also briefly worked on <strong>applied machine learning systems</strong> and scalable ML pipelines for time-series modeling in the fintech domain.
+      </p>
+      <p>I am interested in <strong>research collaborations</strong> and <strong>summer internships</strong>.</p>
+    </div>
+
+    <div class="hero-cta">
+      <a href="#" class="btn btn-primary" onclick="showPage('research');return false;">View Research</a>
+      <a href="#" class="btn btn-ghost" onclick="showPage('contact');return false;">Get in Touch</a>
+    </div>
+  </div>
+
+  <div class="info-grid" style="grid-column:1/-1;">
+    <div class="info-block">
+      <div class="info-block-title">Academic Honors</div>
+      <ul class="info-list">
+        <li>Published at NeurIPS '24 &amp; '25</li>
+        <li>Published at IMWUT '25, TACL '26</li>
+        <li>Google DeepMind Symposium Invitee, 2024</li>
+        <li>oSTEM Grad Application Scholarship, 2025</li>
+        <li>NTSE Scholar, 2019</li>
       </ul>
-    </nav>
+    </div>
+    <div class="info-block">
+      <div class="info-block-title">Research Interests</div>
+      <ul class="info-list">
+        <li>Multimodal Foundational Models</li>
+        <li>Human-Centered AI</li>
+        <li>Time-Series Signal Processing</li>
+        <li>Mental Health &amp; Emotion AI</li>
+        <li>NLP &amp; Society</li>
+      </ul>
+    </div>
+    <div class="info-block">
+      <div class="info-block-title">Service &amp; Community</div>
+      <ul class="info-list">
+        <li>Workshop Chair, Queer in AI @ NAACL 2025</li>
+        <li>Reviewer: ACL 2026, AAAI 2025, ACM CHI 2025, NeurIPS 2025</li>
+        <li>Student Senate, IIIT Delhi</li>
+      </ul>
+    </div>
+    <div class="info-block">
+      <div class="info-block-title">Teaching</div>
+      <ul class="info-list">
+        <li>TA · Interactive Systems</li>
+        <li>TA · Human-Centered AI</li>
+        <li>TA · Intro to Programming</li>
+        <li>TA · Operating Systems</li>
+      </ul>
+    </div>
+  </div>
 
-  </header>
+  <div class="page-footer" style="grid-column:1/-1">
+    <p>Ankush Gupta · PhD Incoming · He/They</p>
+    <p>MultiModal AI · Foundational AI · Responsible AI</p>
+  </div>
+</div>
 
-  <main class="main">
+<!-- ═══ JOURNEY ═══ -->
+<div id="page-journey" class="page">
+  <div class="section-label">Career Overview</div>
+  <div class="page-header">
+    <h2>Experience Timeline</h2>
+    <p>An overview of my work across academia, research, and industry, highlighting key roles and contributions.</p>
+  </div>
 
-    <!-- Hero Section -->
-    <section id="hero" class="hero section">
+  <div class="journey-tabs">
+    <button class="journey-tab active" data-journey="all" onclick="filterJourney('all',this)">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block;"></span> All
+    </button>
+    <button class="journey-tab" data-journey="education" onclick="filterJourney('education',this)">
+      <span class="tab-dot"></span> Education
+    </button>
+    <button class="journey-tab" data-journey="research" onclick="filterJourney('research',this)">
+      <span class="tab-dot"></span> Research
+    </button>
+    <button class="journey-tab" data-journey="industry" onclick="filterJourney('industry',this)">
+      <span class="tab-dot"></span> Industry
+    </button>
+  </div>
 
-      <img src="assets/img/t.jpg" alt="" data-aos="fade-in" class="">
+  <!-- ROAD VIEW — shown when "All" is selected -->
+  <div id="journey-road-view">
+    <div class="journey-road-wrap" id="road-wrap">
+      <!-- Left column -->
+      <div class="journey-col-left" id="left-col">
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-        <h2>Ankush Gupta</h2>
-        <p>I'm <span class="typed" data-typed-items="Researcher, Data Enthusiast,  Developer, HCAI Enthusiast, Student,  CSE Undergraduate">Researcher</span><span class="typed-cursor typed-cursor--blink" aria-hidden="true"></span><span class="typed-cursor typed-cursor--blink" aria-hidden="true"></span></p>
-      </div>
+        <!-- Slot 1: upcoming PhD (right side, so left is empty) -->
+        <div class="journey-slot empty" data-slot="0">
+          <div class="journey-card" data-type="upcoming" style="opacity:0;pointer-events:none;"></div>
+        </div>
 
-    </section><!-- /Hero Section -->
-
-    <!-- About Section -->
-    <section id="about" class="about section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>About</h2>
-        <p>I am an <b> undergraduate at IIIT-Delhi </b>, majoring in Computer Science and Engineering. I possess a robust passion for software development and problem-solving. My academic interests encompass research and projects in <b>emerging technologies, interactive systems, artificial intelligence, and data analysis algorithms </b>. My objective is to design AI-driven solutions that leverage machine learning to address complex problems, extract valuable insights from datasets, and enhance task accuracy by analyzing the <b>impact of various modalities </b>. Through my projects and research, I aspire to contribute to advancements in interactive systems, AI, and data analysis, utilizing these technologies to create intelligent, efficient, and user-centric applications for diverse populations.</p>
-        <br>
-        <p>Beyond my academic endeavours, I love <b>writing poetry and reading blogs and novels</b>. I also participate in <b>seasonal debates</b>, as public speaking is an excellent means of connecting with like-minded individuals and expressing my viewpoints. Recently, I have connected with <b><a href="https://www.queerinai.com/">Queer in AI</a> </b>to connect with my fellow members of the LGBTQ+ community within the AI/ML field, reinforcing my commitment to diversity, inclusivity, and visibility in research and technology.</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row gy-4 justify-content-center">
-          <div class="col-lg-4">
-            <img src="assets/img/ankush.jpg" class="img-fluid" alt="">
+        <!-- Slot 2: MLE PayGlocal (LEFT) -->
+        <div class="journey-slot" data-slot="1">
+          <div class="journey-card revealed" data-type="industry" style="animation-delay:0.15s">
+            <div class="jc-year">Jul 2025 – May 2026</div>
+            <span class="jc-type type-industry">Industry</span>
+            <div class="jc-title">Machine Learning Engineer</div>
+            <div class="jc-org">PayGlocal · Fintech Startup</div>
+            <div class="jc-desc">Real-time payment risk systems. Designed time-series signal-based personalized risk model. Reduced false alerts by 50%+.</div>
+            <div class="jc-pills"><span class="jc-pill">Time-Series</span><span class="jc-pill">Risk Modeling</span><span class="jc-pill">Fintech</span></div>
           </div>
-          <div class="col-lg-8 content">
-            <h2>Student &amp; Researcher</h2>
-            <p class="fst-italic py-3">
-              I am currently working on two research projects. One is a joint collaboration with <a href = "https://www.iiitd.ac.in/pushpendra">Prof. Pushpendra Singh</a> (Professor, IIIT Delhi, India) , <a href="https://www.rit.edu/directory/mjkvcs-mohan-kumar">Prof. Mohan Kumar</a> (Professor, Rochester Institute of Technology, USA) and <a href="https://www.linkedin.com/in/pragya-singh-438508113/">Ms. Pragya Singh</a> (Phd., CSE IIIT Delhi) on the <b>wearables and human emotions projects to build HCAI solutions for mental health</b>. My second collaboration started in August 2024 with <a href = "https://www.linkedin.com/in/mukesh-mohania-4755606/">Prof. Mukesh Mohania</a> (Professor, IIT Delhi, India) on the extent of the <a href = "https://dl.acm.org/doi/pdf/10.5555/1182635.1164185">EROCS</a>/ <a href = "https://dl.acm.org/doi/10.1145/1099554.1099676">SCORE</a> (integration of unstructured and structured data) algorithms for <b>recommending the contextually relevant citations from a given research papers DB</b> as we write the text in the technical papers.</p>
-            <div class="row">
-              <div class="col-lg-6">
-                <ul>
-                  <li><i class="bi bi-chevron-right"></i> <strong>Birthday:</strong> <span>4 May 2003</span></li>
-                  <li><i class="bi bi-chevron-right"></i> <strong>University:</strong> <span>IIIT-Delhi</span></li>
-                  <li><i class="bi bi-chevron-right"></i> <strong>Phone:</strong> <span>+91 87088 92956</span></li>
-                   <li><i class="bi bi-chevron-right"></i> <strong>Age:</strong> <span>21</span></li>
-                  <li><i class="bi bi-chevron-right"></i> <strong>City:</strong> <span>New Delhi, India</span></li>
-                                  </ul>
-              </div>
-              <div class="col-lg-6">
-                <ul>
-                  <li><i class="bi bi-chevron-right"></i> <strong>Degree:</strong> <span>Bachelors</span></li>
-                  <li><i class="bi bi-chevron-right"></i> <strong>Email:</strong> <span>ankush21232@iiitd.ac.in</span></li>
-                  <li><i class="bi bi-chevron-right"></i> <strong>Research Interest:</strong> <span> Human-Centred AI, Human-Computer Interaction, Machine Learning, Deep Learning, Information Retrieval, Data Mining, Data Analysis </span></li>
+        </div>
 
+        <!-- Slot 3: HCAI Research (empty — right side) -->
+        <div class="journey-slot empty" data-slot="2"></div>
 
+        <!-- Slot 4: DS Lab Research (LEFT) -->
+        <div class="journey-slot" data-slot="3">
+          <div class="journey-card revealed" data-type="research" style="animation-delay:0.30s">
+            <div class="jc-year">2024 – 2025</div>
+            <span class="jc-type type-research">Research</span>
+            <div class="jc-title">AI Undergrad Researcher · Data Science Lab</div>
+            <div class="jc-org">IIIT Delhi · Prof. Mukesh Mohania</div>
+            <div class="jc-desc">Developed a taxonomy-aligned citation recommendation system combining hierarchical DAG representations, entity matching, and semantic retrieval for context-aware citation generation and placement.</div>
+            <div class="jc-pills">
+  <span class="jc-pill">Information Retrieval</span>
+  <span class="jc-pill">Graph-Based Modeling</span>
+  <span class="jc-pill">Semantic Search</span>
+  <span class="jc-pill">NLP</span>
+</div>
+          </div>
+        </div>
 
-                </ul>
-              </div>
-            </div>
+        <!-- Slot 5: E.ON 2024 MLE Intern (empty — right side) -->
+        <div class="journey-slot empty" data-slot="4"></div>
+
+        <!-- Slot 6: HCI Researcher (LEFT) -->
+        <div class="journey-slot" data-slot="5">
+          <div class="journey-card revealed" data-type="research" style="animation-delay:0.45s">
+            <div class="jc-year">2023 – 2024</div>
+            <span class="jc-type type-research">Research</span>
+            <div class="jc-title">HCI Researcher · Creative Interface Lab</div>
+            <div class="jc-org">IIIT Delhi · Dr. Anmol Srivastava</div>
+            <div class="jc-desc">Gesture-tracking game for children using RAGs and RealSense depth motion. Augmented Hindi language learning. Published at ACM India HCI 2023.</div>
+            <div class="jc-pills"><span class="jc-pill">HCI</span><span class="jc-pill">Gesture Tracking</span><span class="jc-pill">Assistive Tech</span></div>
+          </div>
+        </div>
+
+        <!-- Slot 7: E.ON Summer Intern 2023 (empty — right side) -->
+        <div class="journey-slot empty" data-slot="6"></div>
+
+        <!-- Slot 8: IIIT Delhi education (LEFT) -->
+        <div class="journey-slot" data-slot="7">
+          <div class="journey-card revealed" data-type="education" style="animation-delay:0.60s">
+            <div class="jc-year">2021 – 2025</div>
+            <span class="jc-type type-education">Education</span>
+            <div class="jc-title">B.Tech · Computer Science</div>
+            <div class="jc-org">IIIT Delhi</div>
+            <div class="jc-desc">Research in ML, HCAI, HCI. TA for 4 courses. Student Senate & Disciplinary Action Committee..</div>
+            <div class="jc-pills"><span class="jc-pill">AI Researcher</span><span class="jc-pill">A* Conference </span><span class="jc-pill">Student Senate</span><span class="jc-pill">TA × 4</span></div>
           </div>
         </div>
 
       </div>
 
+      <!-- Road spine -->
+      <div class="road-spine">
+        <div class="road-track" id="road-track">
+          <!-- Nodes positioned via JS -->
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="journey-col-right" id="right-col">
+
+        <!-- Slot 1: upcoming PhD (RIGHT) -->
+        <div class="journey-slot" data-slot="0">
+          <div class="journey-card revealed" data-type="upcoming" style="animation-delay:0.08s">
+            <div class="jc-year">2026 → Upcoming</div>
+            <span class="jc-type type-upcoming">Upcoming</span>
+            <div class="jc-title">PhD in Computer Science</div>
+            <div class="jc-org">Purdue University · IDEAS Lab · Dr. Aniket Bera</div>
+            <div class="jc-desc">Working on multimodal foundation models, with a focus on building scalable and responsible AI systems.</div>
+            <div class="jc-pills">
+  <span class="jc-pill">Multimodal Systems</span>
+  <span class="jc-pill">Foundation Models</span>
+  <span class="jc-pill">Robustness</span>
+  <span class="jc-pill">Responsible AI</span>
+</div>
+          </div>
+        </div>
+
+        <!-- Slot 2: empty (MLE PayGlocal on left) -->
+        <div class="journey-slot empty" data-slot="1"></div>
+
+        <!-- Slot 3: HCAI Melange (RIGHT) -->
+        <div class="journey-slot" data-slot="2">
+          <div class="journey-card revealed" data-type="research" style="animation-delay:0.22s">
+            <div class="jc-year">2023 – 2026</div>
+            <span class="jc-type type-research">Research</span>
+            <div class="jc-title">HCAI Research Assistant · Melange Lab</div>
+            <div class="jc-org">IIIT Delhi · Prof. Pushpendra Singh &amp; Prof. Mohan Kumar (RIT)</div>
+            <div class="jc-desc">Built multimodal emotion recognition systems using physiological signals, spanning large-scale benchmarking, dataset development, and real-world data collection frameworks.</div>
+            <div class="jc-pills">
+  <span class="jc-pill">Physiological Signals</span>
+  <span class="jc-pill">Multimodal Learning</span>
+  <span class="jc-pill">Affective Computing</span>
+  <span class="jc-pill">Benchmarking</span>
+</div>
+          </div>
+        </div>
+
+        <!-- Slot 4: empty (DS Lab on left) -->
+        <div class="journey-slot empty" data-slot="3"></div>
+
+        <!-- Slot 5: E.ON 2024 MLE Intern (RIGHT) -->
+        <div class="journey-slot" data-slot="4">
+          <div class="journey-card revealed" data-type="industry" style="animation-delay:0.37s">
+            <div class="jc-year">Jun – Aug 2024</div>
+            <span class="jc-type type-industry">Industry</span>
+            <div class="jc-title">MLE Intern</div>
+            <div class="jc-org">E.ON Digital Technology</div>
+            <div class="jc-desc">Developed a CI/CD pipeline chatbot for power grid operations, reducing workflow overhead and improving usability, alongside optimizing ML/NLP models for intelligent automation in installation and maintenance tasks.</div>
+            <div class="jc-pills">
+  <span class="jc-pill">MLOps</span>
+  <span class="jc-pill">CI/CD Systems</span>
+  <span class="jc-pill">Conversational AI</span>
+  <span class="jc-pill">Industrial AI</span>
+</div>
+          </div>
+        </div>
+
+        <!-- Slot 6: empty (HCI Researcher on left) -->
+        <div class="journey-slot empty" data-slot="5"></div>
+
+        <!-- Slot 7: E.ON Summer Intern 2023 (RIGHT) -->
+        <div class="journey-slot" data-slot="6">
+          <div class="journey-card revealed" data-type="industry" style="animation-delay:0.52s">
+            <div class="jc-year">Jun – Aug 2023</div>
+            <span class="jc-type type-industry">Industry</span>
+            <div class="jc-title">Student Summer Intern</div>
+            <div class="jc-org">E.ON SE</div>
+            <div class="jc-desc">Automated Microsoft Azure pipeline. Increased image classification efficiency to 95%, reduced computational overhead by 5%.</div>
+            <div class="jc-pills"><span class="jc-pill">Azure</span><span class="jc-pill">Computer Vision</span><span class="jc-pill">MLOps</span></div>
+          </div>
+        </div>
+
+        <!-- Slot 8: empty (IIIT Delhi on left) -->
+        <div class="journey-slot empty" data-slot="7"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FLAT VIEW — shown when filtering by type -->
+  <div class="journey-flat" id="journey-flat-view">
+    <!-- cards injected by JS -->
+  </div>
+
+  <div class="page-footer">
+    <p>Ankush Gupta · PhD Incoming · He/They</p>
+    <p>MultiModal AI · Foundational AI · Responsible AI</p>
+  </div>
+</div>
+
+<!-- ═══ RESEARCH ═══ -->
+<div id="page-research" class="page">
+  <div class="section-label">Publications</div>
+  <div class="page-header">
+    <h2>Selected Research</h2>
+    <p>Published in A* venues. Filter by theme below. Full list on <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2)">Google Scholar ↗</a></p>
+  </div>
+
+  <div class="pub-tabs">
+    <button class="pub-tab active" onclick="filterPubs('all',this)">All</button>
+    <button class="pub-tab" onclick="filterPubs('foundations',this)">Foundational AI</button>
+    <button class="pub-tab" onclick="filterPubs('nlp',this)">NLP &amp; Society</button>
+    <button class="pub-tab" onclick="filterPubs('hci',this)">HCI</button>
+  </div>
+
+  <div class="pub-grid">
+    <div class="pub-card visible" data-category="foundations">
+      <div class="pub-venue">NeurIPS 2025</div>
       
-    <!-- 
-    </section>
-    <section id="stats" class="stats section">
+      <div class="pub-title">
+        FEEL: Quantifying Heterogeneity in Physiological Signals for Generalizable Emotion Recognition
+      </div>
+    
+      
+      <div class="pub-abstract">
+        A large-scale benchmarking framework for emotion recognition from physiological signals, unifying evaluation across 19 EDA and PPG datasets. FEEL benchmarks 16 architectures across traditional, deep, and self-supervised paradigms under both within- and cross-dataset settings, revealing strong generalization of contrastive signal-language pretraining and the continued robustness of feature-based models in low-resource environments.
+      </div>
+      
+      <div class="pub-links">
+        <a href="http://neurips.cc/virtual/2025/loc/san-diego/poster/121715" target="_blank" class="pub-link">NeurIPS 2025</a>
+        <a href="https://alchemy18.github.io/FEEL_Benchmark/" target="_blank" class="pub-link">Project Page</a>
+      </div>
+    </div>
+<div class="pub-card visible" data-category="foundations">
+  <div class="pub-venue">NeurIPS 2024</div>
+  
+  <div class="pub-title">
+    EEVR: A Dataset of Paired Physiological Signals and Textual Descriptions for Joint Emotion Representation Learning
+  </div>
+  
+  <div class="pub-abstract">
+    A multimodal dataset pairing EDA and PPG signals from 360° VR-based emotion elicitation with participant-level textual descriptions (37 subjects), enabling context-aware emotion recognition. Introduces contrastive language-signal pretraining (CLSP), improving performance and enabling strong zero-shot transfer across datasets.
+  </div>
+  
+  <div class="pub-links">
+    <a href="https://nips.cc/virtual/2024/poster/97493" target="_blank" class="pub-link">NeurIPS</a>
+    <a href="https://melangelabiiitd.github.io/EEVR/" target="_blank" class="pub-link">Project Page</a>
+  </div>
+</div>
+    <div class="pub-card visible" data-category="hci">
+  <div class="pub-venue">ACM IMWUT 2025 · UbiComp</div>
+  
+  <div class="pub-title">
+    AnnoSense: Navigating the Complexities of Collecting and Annotating Everyday Emotion Data for AI
+  </div>
+  
+  <div class="pub-abstract">
+    A stakeholder-informed framework for real-world emotion data collection, developed through studies with 119 participants including the public, clinicians, and AI researchers. Produces 15 actionable guidelines for reliable, usable, and ethically grounded emotion annotation, validated by domain experts.
+  </div>
+  
+  <div class="pub-links">
+    <a href="http://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="pub-link">ACM DL</a>
+    <a href="https://www.ubicomp.org/ubicomp-iswc-2025/program/" target="_blank" class="pub-link">UbiComp</a>
+  </div>
+</div>
+    <div class="pub-card visible" data-category="nlp">
+  <div class="pub-venue">Under Review</div>
+  
+  <div class="pub-title">
+    CITAR: Citation Inference using Taxonomy-Aligned Retrieval and Context-Aware Entity Matching
+  </div>
+  
+  <div class="pub-abstract">
+    A context-aware citation recommendation system that aligns hierarchical academic taxonomies to generate relevant citations with precise insertion points. Achieves strong retrieval performance (Recall@10 0.35, MRR 0.21) while improving exposure balance across the corpus, demonstrating effective trade-offs between relevance, efficiency, and fairness.
+  </div>
+  
+  <div class="pub-links">
+    <a href="#" class="pub-link" style="opacity:0.4;">Under Review</a>
+  </div>
+</div>
+    <div class="pub-card visible" data-category="foundations nlp">
+  <div class="pub-venue">Under Review</div>
+  
+  <div class="pub-title">
+    Toward Inclusive NLP: A Survey of LGBTQIA+ Representation and Gaps in Language Technologies
+  </div>
+  
+  <div class="pub-abstract">
+    A systematic survey of 86 NLP papers examining the relationship between language technologies and LGBTQIA+ communities. Identifies key gaps in proactive bias mitigation, intersectional representation, and non-English settings, highlighting opportunities for building more inclusive and equitable NLP systems.
+  </div>
+  
+  <div class="pub-links">
+    <a href="#" class="pub-link" style="opacity:0.4;">Under Review</a>
+  </div>
+</div>
+    <div class="pub-card visible" data-category="hci">
+      <div class="pub-venue">ACM India HCI 2023 · Springer SCI</div>
+      <div class="pub-title">Jail Diaries: An Interactive Pop-Up Book Art Installation</div>
+      <div class="pub-abstract">Interactive learning experiences for children about the Indian freedom struggle, using visual projection mapping and gesture tracking. Published in Springer "Studies in Computational Intelligence."</div>
+      <div class="pub-links"><a href="https://link.springer.com/book/10.1007/978-981-97-4335-3" target="_blank" class="pub-link">Springer</a></div>
+    </div>
+  </div>
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+  <div class="page-footer">
+    <p>Ankush Gupta · PhD Incoming · He/They</p>
+    <p>MultiModal AI · Foundational AI · Responsible AI</p>
+  </div>
+</div>
 
-        <div class="row gy-4">
+<!-- ═══ BEYOND ═══ -->
+<div id="page-beyond" class="page">
+  <div class="section-label">Beyond Academia</div>
+  <div class="page-header">
+    <h2>The Other Side</h2>
+    <p>Research is only one part of who I am. Outside the lab, I explore ideas through writing, debate, and community.</p>
+  </div>
+  <div class="beyond-grid">
+    <div class="beyond-card clickable" onclick="openCreative()">
+      <div class="beyond-icon">✍️</div>
+      <div class="beyond-title">Poetry &amp; Writing</div>
+      <div class="beyond-desc">I write poetry as a way of thinking and exlporing about identity, belonging, and the quiet tensions of society. Click to read.</div>
+    </div>
+    <div class="beyond-card clickable" onclick="window.open('https://www.instagram.com/lda.iiitd/','_blank')">
+      <div class="beyond-icon">🎙️</div>
+      <div class="beyond-title">Debating</div>
+      <div class="beyond-desc">Competitive debating sharpened how I think about arguments, evidence, and persuasion, gives safe space for putting up my political views.</div>
+    </div>
+    <div class="beyond-card clickable" onclick="window.open('https://www.goodreads.com/book/show/59344312-verity','_blank')">
+  <div class="beyond-icon">📚</div>
+  <div class="beyond-title">Reading</div>
+  <div class="beyond-desc">
+    Mostly rom-com novels these days, with a soft spot for queer stories — light, funny, and easy to keep returning to.
+  </div>
+  <div class="beyond-sub">Currently reading — click to view</div>
+</div>
+   <div class="beyond-card clickable" onclick="window.open('https://studentsenate.iiitd.edu.in/','_blank')">
+  <div class="beyond-icon">🏛️</div>
+  <div class="beyond-title">Student Governance</div>
+  <div class="beyond-desc">
+    Student Senate member at IIIT Delhi, contributed to institutional policy and student representation, while mentoring junior students and supporting their academic journey.
+  </div>
+</div>
+    <div class="beyond-card clickable" onclick="window.open('https://aclanthology.org/2025.queerinai-main.pdf','_blank')">
+      <div class="beyond-icon">🏳️‍🌈</div>
+      <div class="beyond-title">Queer in AI</div>
+      <div class="beyond-desc">Active Core organizer and NAACL 2025 Workshop Chair at Queer in AI, building community and supporting visibility for LGBTQ+ researchers in AI/ML.</div>
+    </div>
+    <div class="beyond-card">
+      <div class="beyond-icon">🎓</div>
+      <div class="beyond-title">Teaching</div>
+      <div class="beyond-desc">TA'd four courses including Human-Centered AI and Interactive Systems. Good teaching is good research communication — both require knowing what your audience actually needs.</div>
+    </div>
+  </div>
 
-          <div class="col-lg-3 col-md-6">
-            <div class="stats-item">
-              <i class="bi bi-emoji-smile"></i>
-              <span data-purecounter-start="0" data-purecounter-end="232" data-purecounter-duration="1" class="purecounter"></span>
-              <p><strong>Happy Clients</strong> <span>consequuntur quae</span></p>
-            </div>
-          </div>
+  <div class="page-footer">
+    <p>Ankush Gupta · PhD Incoming · He/They</p>
+    <p>MultiModal AI · Foundational AI · Responsible AI</p>
+  </div>
+</div>
 
-          <div class="col-lg-3 col-md-6">
-            <div class="stats-item">
-              <i class="bi bi-journal-richtext"></i>
-              <span data-purecounter-start="0" data-purecounter-end="521" data-purecounter-duration="1" class="purecounter"></span>
-              <p><strong>Projects</strong> <span>adipisci atque cum quia aut</span></p>
-            </div>
-          </div>
+<!-- ═══ POETRY MODAL — TILE GALLERY ═══ -->
+<div class="creative-overlay" id="creative-overlay" onclick="closeCreativeIfBg(event)">
+  <div class="creative-modal" id="creative-modal">
+    <button class="creative-modal-close" onclick="closeCreative()">✕</button>
 
-          <div class="col-lg-3 col-md-6">
-            <div class="stats-item">
-              <i class="bi bi-headset"></i>
-              <span data-purecounter-start="0" data-purecounter-end="1453" data-purecounter-duration="1" class="purecounter"></span>
-              <p><strong>Hours Of Support</strong> <span>aut commodi quaerat</span></p>
-            </div>
-          </div>
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="creative-eyebrow">Creative Corner · Poetry &amp; Writing</div>
+      <h3>The Creative Corner</h3>
+      <p class="modal-sub">
+        Poems, essays, reflections, and more. Click a tile to explore.
+      </p>
 
-          <div class="col-lg-3 col-md-6">
-            <div class="stats-item">
-              <i class="bi bi-people"></i>
-              <span data-purecounter-start="0" data-purecounter-end="32" data-purecounter-duration="1" class="purecounter"></span>
-              <p><strong>Hard Workers</strong> <span>rerum asperiores dolor</span></p>
-            </div>
-          </div>
+      <!-- Tag filters -->
+      <div class="poetry-tags" id="poetry-tags">
+        <button class="poetry-tag active" onclick="filterPoems('all',this)">all</button>
+        <button class="poetry-tag" onclick="filterPoems('poetry',this)">poetry</button>
+        <button class="poetry-tag" onclick="filterPoems('reflection',this)">reflection</button>
+        <button class="poetry-tag" onclick="filterPoems('society',this)">society</button>
+        <button class="poetry-tag" onclick="filterPoems('love',this)">love</button>
+        <button class="poetry-tag" onclick="filterPoems('growth',this)">growth</button>
+        <button class="poetry-tag" onclick="filterPoems('queer',this)">queer</button>
+        <button class="poetry-tag" onclick="filterPoems('video',this)">video</button>
+      </div>
+    </div>
 
+    <!-- Tile grid -->
+    <div class="poetry-tiles" id="poetry-tiles">
+
+      <!-- Tile 1 -->
+      <div class="poetry-tile" data-tags="poetry hindi reflection love growth"
+           data-kind="poem" data-title="राख से आगे?"
+           data-meta="— Creative Corner"
+           data-body="चिंगारी कब आग बनी, पता न चला
+
+फूलों के साथ रूह भी जल उठी थी
+
+बाहर सब वैसा ही रहा, भीतर सन्नाटा बढ़ने लगा
+
+आग अब चुपचाप खुद को खा रही थी
+
+सहमते कदमों में कोई अंजान आया
+
+अपना सा था, फिर भी अजनबी पाया
+
+उसकी सौम्यता से आग भी थमने लगी
+
+राख में दबे फूलों में हल्की खुशबू उठी
+
+राख अब धीरे-धीरे महकने लगी
+
+जैसा सूखे गमले में एक कली खिल्ली
+
+कई लोग आए, पर रुके नहीं
+
+वो वहीं बैठ गया, जहाँ आग थी लगी
+
+जिसे दूर समझा, वही क़रीब निकला
+
+राख में भी फूल देखने का हुनर रखता था
+
+मुझसे ज़्यादा शांत, मुझसे थोड़ा संभला
+
+कोई और नहीं, मेरा परिपक्व स्वरूप था
+
+बसंत आगयी, पर शोर नहीं हुआ
+
+जो राख थी, वही अब राह बन गई
+
+धुआँ सा होकर, कहीं दूर चल दिया
+
+अधजली कलियाँ से एक नया घर बन गया"
+           onclick="openPoem(this)">
+        <div>
+          <div class="tile-kind">poem</div>
+          <div class="tile-title">राख से आगे?</div>
+          <div class="tile-preview">चिंगारी कब आग बनी, पता न चला…</div>
         </div>
-
+        <div class="tile-meta">
+          <span class="tile-tag">hindi</span><span class="tile-tag">love</span><span class="tile-tag">growth</span>
+        </div>
+        <div class="tile-bg-letter">र</div>
       </div>
 
-    </section> -->
+      <!-- Tile 2 -->
+      <div class="poetry-tile" data-tags="poetry hindi reflection love"
+           data-kind="poem" data-title="पहला प्यार"
+           data-meta="— Creative Corner"
+           data-body="पहला प्यार किया तुमसे
 
-    <!-- Skills Section -->
-    <!-- /Skills Section -->
+ये तुम्हारी गलती नहीं
 
-    <!-- Resume Section -->
-    <section id="resume" class="resume section">
+प्यार की उम्मीद की तुमसे
 
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2><a href = "https://drive.google.com/drive/folders/1BubodUer3QiNRusCYbx7_l9pt06wXgCP?usp=sharing" style="color: black;">Resume <i class="bi bi-paperclip"></i></a></h2>
-      </div><!-- End Section Title -->
+ये मेरी समझदारी नहीं
 
-      <div class="container">
+भिक्षु मैं, भटकता अस्थिर मन लेकर के
 
-        <div class="row">
+तू बहती शांत तरणी
 
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
-<!-- Edn Resume Item -->
+तेरी सौंदर्या में स्नान करके
 
-            <h3 class="resume-title">Education</h3>
-            <div class="resume-item">
-              <h4>Bachelors of Technology (Computer Science)</h4>
-              <h5>2021 - Present</h5>
-              <p><em>Indraprastha Institute of Information Technology, Delhi ,India</em></p>
-              <p>I am currently pursuing a Bachelor's degree in the Department of Computer Science and Engineering at IIIT-Delhi. My research interests primarily lie at the intersection of Artificial Intelligence, Data Science, and Human-Computer Interaction. I have conducted studies examining the impact of various interactions on the learning curves of young children. Presently, I am engaged in a project titled "Wearable AI for Mental Health." In addition, I have successfully completed numerous introductory and advanced foundational courses, further enhancing my knowledge and learning in these areas.</p>
-            </div><!-- Edn Resume Item -->
-          </div>
+ढूंढता रूह की शांति
 
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
-            <h3 class="resume-title">TECHNICAL SKILLS</h3>
-            <div class="resume-item">
-              <h4>Programming Languages</h4>
-              <p>Python, MySQL, Java, C, C++, HTML + CSS, JS, R , C#</p>
-            </div><!-- Edn Resume Item -->
+बिखर गया हूँ
 
-            <div class="resume-item">
-              <h4>Development Environments</h4>
-              <p>Eclipse IDE, IntelliJ, VS Code, Linux</p>
-            </div>
+क्या तू समेटेगी?
 
-            <div class="resume-item">
-              <h4>Cloud and Development Tools</h4>
-              <p>Azure, Google Cloud, AWS, Google Collab, Bootstrap, PyTorch, Git, OpenCV, Pandas</p>
-            </div>
+उलझ गया हूँ
 
-            <div class="resume-item">
-              <h4>Technical Electives</h4>
-              <p>Information Retrieval, Deep Learning, Machine Learning, Cloud Computing, Analysis and Design of
-                Algorithms , Advanced Programming, Operating System, Fundamentals of Database Systems</p>
-            </div>
+सुलझाकर, क्या अपना श्रृंगार बनाएगी?
 
-          </div>
+तू यह सुनकर भी अनसुना करेगी
 
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
-            <h3 class="resume-title">Industrial Experience</h3>
-            <div class="resume-item">
-              <h4>Intern,  E.ON Digital Technology</h4>
-              <h5>June 2024 - Present</h5>
-              <p><em>Remote</em></p>
-              <ul>
-                <li>Designed and implemented a <b>CI/CD guide chatbot</b> to support power grid installation and maintenance. It supports the employees by automating the problem-resolving task</li>
-                <li>Used advanced <b>DLops frameworks, integrated NLP techniques</b> for improved user engagement, and employing machine
-                  learning algorithms to optimize system performance. For integration with frontend, <b>FastAPI</b> was used and base code
-                  was done using Python and Pytorch</li>
-              </ul>
-            </div><!-- Edn Resume Item -->
+जानकर भी नज़र अंदाज़ करेगी
 
-            <div class="resume-item">
-              <h4>Student Summer Intern, E.ON</h4>
-              <h5>June 2023 - August 2023</h5>
-              <p><em>Remote</em></p>
-              <ul>
-                <li> Developed and implemented an <b>automated Microsoft Azure system pipeline</b>, significantly enhancing ope-
-                  rational efficiency by <b>95 %</b>. By optimizing Azure services, <b>reduced computational overhead by 5 %</b>.</li>
-                <li>The pipeline was later deployed in the user query resolver. The base code of the pipeline was in Python, and
-                  the problems in the system were identified effectively.</li>
-              </ul>
-            </div><!-- Edn Resume Item -->
+तेरे किनारे काफी कश्तियाँ आती होंगी
 
-          </div>
+क्या उनके भी साथ यही खेल खेलेगी
 
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
-            <h3 class="resume-title">Academia & Research Experience</h3>
-            <div class="resume-item">
-              <h4>Undergrad Researcher, Melange Lab IIIT-Delhi</h4>
-              <h5>February 24 – Present</h5>
-              <p><em>Delhi, India</em></p>
-              <ul>
-                <li>Developing a Mental Health Tracker using <b>physiological signals</b> like Electrodermal Activity (EDA), Photoplethysmography
-                  (PPG), and <b>textual user inputs</b>. My responsibilities include collecting and managing datasets, as well
-                  as implementing <b>benchmarking strategies</b> to enhance emotion prediction models for various tasks related to
-                  stress level and emotions.</li>
-                <li>The novel pre-training algorithm achieved a significant <b>20 % increase</b> in prediction accuracy and <b>doubled
-                  the F1 score</b>. Also, the pre-trained technique outperformed standard physiological signals datasets’ accuracy
-                  scores.</li>
-              </ul>
-            </div><!-- Edn Resume Item -->
+क्या मेरे सपनों की अस्थियाँ को अपनाएगी
 
-            <div class="resume-item">
-              <h4>Undergrad Researcher, Creative Interface Lab IIIT Delhi </h4>
-              <h5>September 2023 – May 2024</h5>
-              <p><em>Delhi, India</em></p>
-              <ul>
-                <li>My work centered on utilizing <b>Responsive Artificial Intelligence (RAG), human gesture tracking technologies</b>, and various stimuli tailored specifically for children. I manage projects, design experiments, and analyze data to optimize educational outcomes, achieving significant improvements in children's learning and attention.</li>
-                <li>This experience has equipped me with expertise in leveraging advanced technologies to create impactful learning environments tailored to specific user group (children)'s needs.</li>
-              </ul>
-            </div><!-- Edn Resume Item -->
+या किसी किनारे पे छोड़ जाएगी
 
-          </div>
+यूँ तो उन्हें बहती हवा हो जाना है
 
+क्या पता तुझ में मिलकर अर्थ बनाना है"
+           onclick="openPoem(this)">
+        <div>
+          <div class="tile-kind">poem</div>
+          <div class="tile-title">पहला प्यार</div>
+          <div class="tile-preview">पहला प्यार किया तुमसे…</div>
         </div>
-
+        <div class="tile-meta">
+          <span class="tile-tag">hindi</span><span class="tile-tag">love</span><span class="tile-tag">reflection</span>
+        </div>
+        <div class="tile-bg-letter">प</div>
       </div>
 
-    </section><!-- /Resume Section -->
+      <!-- Tile 3 -->
+      <div class="poetry-tile" data-tags="poetry hindi society reflection"
+           data-kind="poem" data-title="कृष्णा"
+           data-meta="— Creative Corner"
+           data-body="सुखों की आहुति से जन्मी,
 
-    <!-- Portfolio Section -->
-    <section id="portfolio" class="portfolio section">
+रूप गुण धैर्य धर्मज्ञानी।
 
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Projects</h2>
-      </div><!-- End Section Title -->
+आज सुनो वो कहानी,
 
-      <div class="container">
+जिसके हरि हैं स्वयं साक्षी।
 
-        <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+पुरुषों की ईर्ष्या से युक्त,
 
-          <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
-            <li data-filter="*" class="filter-active">All</li>
-            <li data-filter=".filter-app">Development</li>
-            <li data-filter=".filter-product">ML/AI</li>
-            <li data-filter=".filter-branding">Data & IR</li>
-            <!-- <li data-filter=".filter-books">Books</li> -->
-          </ul><!-- End Portfolio Filters -->
+चौसर हुआ व्यक्तिगत।
 
-          <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
+रिश्तों को नोख पर रख,
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-1.jpg" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Stockworthy</h4>
-                  <p>Developed a multimodal chatbot for Predicting stock market trends and analysis of effects of news articles and naratives online.</p>
-                  <a href="assets/img/portfolio/app-1.jpg" title="Stockworthy" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/Ankush-Gupta04/Stockworthy.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+तृप्त करी अहंकार की भूख।
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-2.jpg" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Traffic Violation Detection System</h4>
-                  <p>Developed a real-time traffic violation detection model, that predicts the time frame and vehicle number plate number for basic
-                    traffic rule violations</p>
-                  <a href="assets/img/portfolio/app-2.jpg" title="Traffic Violation Detection System" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+घमंड चाल से जीते कौरव,
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-3.jpg" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Ride ON</h4>
-                  <p>Implemented a reliable and efficient database management system (DBMS) for a cab booking system.</p>
-                  <a href="assets/img/portfolio/app-3.jpg" title="Ride ON" data-gallery="portfolio-gallery-branding" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/Ankush-Gupta04/RideON.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+पांडवों की नगरी धन और वैभव।
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-4.avif" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Operating System</h4>
-                  <p>Assignments for building artix like operating system's kernel, shell and programme manager</p>
-                  <a href="assets/img/portfolio/app-4.avif" title="Operating System" data-gallery="portfolio-gallery-book" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/Ankush-Gupta04/OS.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+गर्व में धर्मपुत्र ने अधर्म किया,
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-5.webp" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Tank-Stars</h4>
-                  <p>Designed and implemented a fully functional 2-D tank combat game featuring a 1-v-1 multiplayer mode, diverse gameplay modes, and an array of engaging features</p>
-                  <a href="assets/img/portfolio/app-5.webp" title="Tank-Stars" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/Ankush-Gupta04/Tank-Star.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+कर्म त्याग कर समर्पण स्वीकार किया।
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/app-6.webp" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Assembler - Simulator</h4>
-                  <p>Developed a Python-based replica of an Assembler and Simulator for a specific Instruction Set Architecture (ISA).</p>
-                  <a href="assets/img/portfolio/app-6.webp" title="Assembler - Simulator" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+जिसके तेज से अमावस जगती,
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/images.png" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Information Retrieval Submissions</h4>
-                  <p>Submissions (Mini-project) for the course Information Retrieval, (CSE-508).</p>
-                  <a href="assets/img/portfolio/images.png" title="Information Retrieval Submissions" data-gallery="portfolio-gallery-branding" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/Ankush-Gupta04/CSE_508_Winter2024_2021232.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+जिसके आँसू से प्रलय आती।
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/images.jpeg" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>DL Submissions</h4>
-                  <p>Submissions (Mini-project) for the course Deep Learning</p>
-                  <a href="assets/img/portfolio/images.jpeg" title="DL Submissions" data-gallery="portfolio-gallery-book" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/Ankush-Gupta04/DL-Assignments-.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+आज, उसी का चीर हरण हुआ
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/5334880-1635-eda-f558-c35b43b638_VR_Safety_Guide_-_Parenting_Blog.jpg" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>EEVR (Emotion Elicitation in Virtual Reality)</h4>
-                  <p>A Virtual Reality-Based Emotion Dataset Featuring Paired Physiological Signals and Textual Descriptions</p>
-                  <a href="assets/img/portfolio/5334880-1635-eda-f558-c35b43b638_VR_Safety_Guide_-_Parenting_Blog.jpg" title="EEVR (Emotion Elicitation in Virtual Reality)" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/alchemy18/EEVR.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+बेबस जनपदी — कृष्ण ढाल — कृष्णा।
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
-              <div class="portfolio-content h-100">
-                <img src="assets/img/portfolio/trip.jpeg" class="img-fluid" alt="">
-                <div class="portfolio-info">
-                  <h4>Reise Guide (Travel Planner Application)</h4>
-                  <p>The Travel Planner Application aids users in planning trips, integrating hotel bookings, and an AI-powered chatbot.</p>
-                  <a href="assets/img/portfolio/trip.jpeg" title="Reise Guide (Travel Planner Application)" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
-                  <a href="https://github.com/Ruchi-here/DeKUT-Hack.git" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
-                </div>
-              </div>
-            </div><!-- End Portfolio Item -->
+अपमानित यज्ञसेनी आज, अपने क्रोध से जली,
 
-          </div><!-- End Portfolio Container -->
+उदास पांडवों ने प्रतिशोध की हुंकार भरी।
 
+भीष्म विदुर द्रोण बेबस खड़े,
+
+गांधारी की ममता विफल हुई।
+
+पुत्र मोह में अंधे धृतराष्ट्र,
+
+कौरवों के बढ़ रहे अपराध।
+
+आज विश्व की हर नारी हुई अपमानित,
+
+मौन सभापति, निवेशित और विलापित।
+
+जाते जाते एक शपथ पांडवों ने सज्जी थी
+
+महाविध्वंस और विनाश की कसम ली थी।
+
+पापियों को दंड देने महाभारत युद्ध की गाथा —
+
+एक पीड़ित के आँसू से सजी पश्चाताप की गाथा।
+
+पुरातन इतिहास के पन्नों में,
+
+जुड़ी है हमारी विरासत की यादें।
+
+आज भी खड़ी है द्रौपदी निर्भीक,
+
+सब हैं खामोश, ना जाने क्यों हैं सब मूक।"
+           onclick="openPoem(this)">
+        <div>
+          <div class="tile-kind">poem</div>
+          <div class="tile-title">कृष्णा</div>
+          <div class="tile-preview">सुखों की आहुति से जन्मी…</div>
         </div>
-
+        <div class="tile-meta">
+          <span class="tile-tag">hindi</span><span class="tile-tag">society</span><span class="tile-tag">reflection</span>
+        </div>
+        <div class="tile-bg-letter">क</div>
       </div>
 
-    </section><!-- /Portfolio Section -->
+      <!-- Tile 4 -->
+      <div class="poetry-tile" data-tags="poetry hindi reflection growth self-discovery"
+           data-kind="poem" data-title="सीख"
+           data-meta="— Creative Corner"
+           data-body="सीख, क्या है सीख
 
-    <!-- Services Section -->
-    <section id="services" class="services section">
+कल का अनुभव, आज की गलती
 
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Publications & Achievements</h2>
-      </div><!-- End Section Title -->
+आने वाले कल के राह
 
-      <div class="container">
+ज़िंदगी के सफलता की सीढ़ी
 
-        <div class="row gy-4">
+सीखता है हर पल इंसान
 
-          <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="100">
-            <div class="icon flex-shrink-0"><i class="bi bi-briefcase"></i></div>
-            <div>
-              <h4 class="title"><a  class="stretched-link">Jail Diaries - Springer series “Studies in Computational Intelligence”</a></h4>
-              <p class="description">The Proof of concept paper for the increasing attention among children as Jail Diaries accepted at IndiaHCI 2023 and to be published in the Springer series “Studies in Computational Intelligence</p>
-            </div>
-          </div>
-          <!-- End Service Item -->
+चाहे छोटा, चाहे बड़ा
 
-          <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="200">
-            <div class="icon flex-shrink-0"><i class="bi bi-briefcase"></i></div>
-            <div>
-              <h4 class="title"><a class="stretched-link">EEVR - NeurIPS Dataset & Benchmarking Track (In review)</a></h4>
-              <p class="description">EEVR: A Virtual Reality-Based Emotion Dataset and benchmarking algorithm Featuring Paired Physiological Signals and Textual Descriptions. Arousal and Valence prediction accuracy increased by 20% (average) and F1-score is doubled then the existing state-of-art alogorithms. </p>
-            </div>
-          </div><!-- End Service Item -->
+सबसे ज़रूरी है प्रश्न पूछना
 
-          <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="300">
-            <div class="icon flex-shrink-0"><i class="bi bi-trophy"></i></div>
-            <div>
-              <h4 class="title"><a  class="stretched-link">NTSE SCHOLAR</a></h4>
-              <p class="description">National Talent Search Exam Scholar, awarded by NCERT (Government of India). Annually, approximately 1,000 sophomore high school students nationwide are selected for this prestigious scholarship. The examination evaluates students on topics including Aptitude, Reasoning, Mathematics, Physics, Chemistry, Biology, and Social Sciences.</p>
-            </div>
-          </div><!-- End Service Item -->
+परिणाम तो हर पल बदलता
 
-          <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="400">
-            <div class="icon flex-shrink-0"><i class="bi bi-trophy"></i></div>
-            <div>
-              <h4 class="title"><a  class="stretched-link">KVPY</a></h4>
-              <p class="description">Kishore Vaigyanik Protsahan Yojana (KVPY) Stage-1 scholar, conducted by IISc Bangalore. Annually, approximately the top 2000 senior high school students in STEM disciplines are shortlisted for Stage-1, with around 50% receiving annual scholarships following interview selection. This examination aims to foster a research-oriented culture among school students.</p>
-            </div>
-          </div><!-- End Service Item -->
+इन बच्चों से बहुत कुछ सीखा
 
-          <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="500">
-            <div class="icon flex-shrink-0"><i class="bi bi-bar-chart"></i></div>
-            <div>
-              <h4 class="title"><a  class="stretched-link">LEETCODE</a></h4>
-              <p class="description">Comlpleted 200+ medium or hard difficulty Questions on LeetCode.</p>
-            </div>
-          </div><!-- End Service Item -->
+हर लम्हे ग़म भुलाना
 
+समय के साथ चलना
 
+खुलकर जीना, खुलकर मुस्कुराना
+
+ज़िम्मेदारी को अच्छे से समझते
+
+सही, गलत की बेड़ियाँ सुलझाते
+
+दोस्ती, प्यार और विश्वास की नींव
+
+पे स्थापित किए कई नए रिश्ते
+
+स्थिरता की कला सीखी
+
+न जाने कब इतना सीखा
+
+क्रोध पे अंकुश लगाते
+
+साथ मिलकर आगे बढ़ा
+
+छोटी सी थी यह यात्रा
+
+सीख थी काफी बड़ी
+
+पता नहीं कब ख़त्म हुई यह यात्रा
+
+जीवन में नए रंग भरेगी"
+           onclick="openPoem(this)">
+        <div>
+          <div class="tile-kind">poem</div>
+          <div class="tile-title">सीख</div>
+          <div class="tile-preview">सीख, क्या है सीख…</div>
         </div>
-
+        <div class="tile-meta">
+          <span class="tile-tag">reflection</span><span class="tile-tag">growth</span><span class="tile-tag">self-discovery</span>
+        </div>
+        <div class="tile-bg-letter">स</div>
       </div>
 
-    </section><!-- /Services Section -->
-
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Volunteer Work & Student Activities</h2>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="swiper init-swiper">
-          <script type="application/json" class="swiper-config">
-            {
-              "loop": true,
-              "speed": 600,
-              "autoplay": {
-                "delay": 5000
-              },
-              "slidesPerView": "auto",
-              "pagination": {
-                "el": ".swiper-pagination",
-                "type": "bullets",
-                "clickable": true
-              },
-              "breakpoints": {
-                "320": {
-                  "slidesPerView": 1,
-                  "spaceBetween": 40
-                },
-                "1200": {
-                  "slidesPerView": 3,
-                  "spaceBetween": 1
-                }
-              }
-            }
-          </script>
-          <div class="swiper-wrapper">
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/qia.png" class="testimonial-img" alt="">
-                <h3>Co-organizer</h3>
-                <h4>Affinity Workshop: Queer in AI <br> NeurIPS 2024 </h4>
-              </div>
-            </div><!-- End testimonial item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/images (1).jpeg" class="testimonial-img" alt="">
-                <h3>Teaching Assistant</h3>
-                <h4>for Course CSE 573 (Interactive Systems) <br> under Prof. Pushpendra Singh</h4>
-              </div>
-            </div><!-- End testimonial item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/os.webp" class="testimonial-img" alt="">
-                <h3>Head Teaching Assistant</h3>
-                <h4>for Course CSE 231 (Operating Systems) <br> under Prof. Dhruv Kumar</h4>
-              </div>
-            </div><!-- End testimonial item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/images.png" class="testimonial-img" alt="">
-                <h3>Head Student Organizer</h3>
-                <h4>Research Innovation and Incubation Showcase 2024 <br> IIIT-Delhi </h4>
-              </div>
-            </div><!-- End testimonial item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/Group 50.png" class="testimonial-img" alt="">
-                <h3>Student Head</h3>
-                <h4>Technical & Cultural Clubs, IIIT-Delhi <br> Student Council 2023 - 2024</h4>
-              </div>
-            </div><!-- End testimonial item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/images.jpeg" class="testimonial-img" alt="">
-                <h3>Student Mentor</h3>
-                <h4>Student Mentorship Programme 2023 <br> IIIT-Delhi</h4>
-              </div>
-            </div><!-- End testimonial item -->
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/urc.jpeg" class="testimonial-img" alt="">
-                <h3>Founding Member</h3>
-                <h4>Undergraduate Research Club <br> IIIT Delhi</h4>
-              </div>
-            </div>
-
-             <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/lab.jpeg" class="testimonial-img" alt="">
-                <h3>Senior Member</h3>
-                <h4>Literature Debate Anime Club <br> IIIT Delhi</h4>
-              </div>
-            </div>
-
-            <div class="swiper-slide">
-              <div class="testimonial-item">
-                <img src="assets/img/testimonials/s.jpg" class="testimonial-img" alt="">
-                <h3>Head Student Organizer</h3>
-                <h4>Summer Camp 2023, IIIT-Delhi for underprivileged students.</h4>
-              </div>
-            </div><!-- End testimonial item -->
-
-          </div>
-          <div class="swiper-pagination"></div>
+      <!-- Tile 5 — YouTube -->
+      <div class="poetry-tile" data-tags="video funny"
+           data-kind="video" data-title="Podcast Interview"
+           onclick="window.open('https://www.youtube.com/watch?v=KC_F7I3WfHc&t=1s','_blank')">
+        <div>
+          <div class="tile-kind">scripts / interview</div>
+          <div class="tile-title">Podcast Interview</div>
+          <div class="tile-preview">Watch on YouTube →</div>
         </div>
-
+        <div class="tile-meta">
+          <span class="tile-tag">video</span><span class="tile-tag">podcast</span>
+        </div>
+        <div class="tile-bg-letter">▶</div>
       </div>
 
-    </section><!-- /Testimonials Section -->
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Contact</h2>
-        <p>Incase our research interest meets kindly connect. I would be grateful to collaborate for working on new ideas.</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row gy-4">
-
-          <div class="col-lg-5">
-
-            <div class="info-wrap">
-              <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="200">
-                <i class="bi bi-geo-alt flex-shrink-0"></i>
-                <div>
-                  <h3>Address</h3>
-                  <p>IIITD, Delhi, India</p>
-                </div>
-              </div><!-- End Info Item -->
-
-
-              <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="400">
-                <i class="bi bi-envelope flex-shrink-0"></i>
-                <div>
-                  <h3>Email Us</h3>
-                  <p>ankushg0405@gmail.com</p>
-                </div>
-              </div><!-- End Info Item -->
-
-              <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3504.8026265809!2d77.2709685!3d28.5456517!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x691393414902968e!2sIIIT-Delhi%20R%26D%20Building!5e0!3m2!1sen!2sin!4v1639315084076!5m2!1sen!2sin" frameborder="0" style="border:0; width: 100%; height: 290px;" allowfullscreen></iframe>
-            </div>
-          </div>
-
+      <!-- Tile 6 — YourDost Blog -->
+      <div class="poetry-tile" data-tags="reflection queer growth self-discovery"
+           data-kind="blog" data-title="Ankush's Story"
+           onclick="window.open('https://yourdost.com/blog/2025/05/ankushs-story-of-discovering-his-inner-identity-through-therapy.html','_blank')">
+        <div>
+          <div class="tile-kind">blog · mental health</div>
+          <div class="tile-title">Ankush's Story</div>
+          <div class="tile-preview">Discovering inner identity through therapy →</div>
         </div>
-
+        <div class="tile-meta">
+          <span class="tile-tag">queer</span><span class="tile-tag">growth</span><span class="tile-tag">mental health</span>
+        </div>
+        <div class="tile-bg-letter">✦</div>
       </div>
 
-    </section><!-- /Contact Section -->
+    </div>
 
-  </main>
+    <!-- Inline poem reader -->
+    <div class="poem-reader" id="poem-reader">
+      <button class="poem-reader-close" onclick="closePoem()">← back to tiles</button>
+      <div class="poem-reader-title" id="reader-title"></div>
+      <div class="poem-reader-meta" id="reader-meta"></div>
+      <div class="poem-reader-body" id="reader-body"></div>
+    </div>
 
-  <footer id="footer" class="footer position-relative">
+  </div>
+</div>
 
-  </footer>
+<!-- ═══ UPDATES ═══ -->
+<div id="page-updates" class="page">
+  <div class="section-label">Updates</div>
+  <div class="page-header">
+    <h2>News &amp; Activity</h2>
+    <p>Recent highlights and announcements. <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" style="color:var(--accent2)">Follow on LinkedIn ↗</a> for the full feed.</p>
+  </div>
 
-  <!-- Scroll Top -->
-  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <div class="updates-filter">
+    <button class="updates-tag active" onclick="filterUpdates('all',this)">All</button>
+    <button class="updates-tag" onclick="filterUpdates('conference',this)">Conference</button>
+    <button class="updates-tag" onclick="filterUpdates('education',this)">Education</button>
+    <button class="updates-tag" onclick="filterUpdates('visiting',this)">Visiting / Lecture</button>
+  </div>
 
-  <!-- Preloader -->
-  <div id="preloader"></div>
+  <div class="news-grid" id="news-grid">
+    <div class="news-card" data-update-type="education">
+      <div class="news-card-header"><span class="news-venue">2025</span><span class="news-badge badge-education">Education</span></div>
+      <div class="news-title">Joining PhD in Computer Science at Purdue University</div>
+      <div class="news-excerpt">Excited to begin my PhD journey under Dr. Aniket Bera at the IDEAS Lab, focused on multimodal foundational models.</div>
+      <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="news-source">→ LinkedIn Post</a>
+    </div>
+    <div class="news-card" data-update-type="conference">
+      <div class="news-card-header"><span class="news-venue">NeurIPS 2025</span><span class="news-badge badge-conference">Conference</span></div>
+      <div class="news-title">FEEL Paper Accepted at NeurIPS 2025</div>
+      <div class="news-excerpt">Our benchmarking framework for physiological signal emotion recognition across 19 datasets was accepted at NeurIPS 2025 Datasets &amp; Benchmarks track.</div>
+      <a href="https://openreview.net/forum?id=JxuFBB5OpD" target="_blank" class="news-source">→ Paper Link</a>
+    </div>
+    <div class="news-card" data-update-type="conference">
+      <div class="news-card-header"><span class="news-venue">NAACL 2025</span><span class="news-badge badge-conference">Conference</span></div>
+      <div class="news-title">Workshop Chair at Queer in AI @ NAACL 2025</div>
+      <div class="news-excerpt">Served as archival workshop chair for the Queer in AI workshop at NAACL 2025 — organizing a space for LGBTQ+ researchers to present and connect.</div>
+      <a href="https://aclanthology.org/2025.queerinai-main.pdf" target="_blank" class="news-source">→ Proceedings</a>
+    </div>
+    <div class="news-card" data-update-type="conference">
+      <div class="news-card-header"><span class="news-venue">ACM IMWUT 2025</span><span class="news-badge badge-conference">Conference</span></div>
+      <div class="news-title">AnnoSense Accepted at ACM IMWUT / UbiComp 2025</div>
+      <div class="news-excerpt">Our framework for ethical emotion data annotation accepted at ACM IMWUT 2025, to be presented at UbiComp/ISWC 2025.</div>
+      <a href="https://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="news-source">→ Paper Link</a>
+    </div>
+    <div class="news-card" data-update-type="visiting">
+      <div class="news-card-header"><span class="news-venue">2024</span><span class="news-badge badge-visiting">Visiting / Lecture</span></div>
+      <div class="news-title">Invited to Google DeepMind Research Symposium</div>
+      <div class="news-excerpt">Selected as an invited attendee at the Google DeepMind Research Symposium 2024.</div>
+      <a href="https://www.linkedin.com/posts/ankush-gupta-9a9211224_neurips-2024-gdm-symposium-2025-activity-7292953681753255936-eJ4o?utm_source=share&utm_medium=member_desktop&rcm=ACoAADhFtVEBYsHnsB8nDJ94JvPv6GWK4aLCv98" target="_blank" class="news-source">→ LinkedIn Post</a>
+    </div>
+    <div class="news-card" data-update-type="conference">
+      <div class="news-card-header"><span class="news-venue">NeurIPS 2024</span><span class="news-badge badge-conference">Conference</span></div>
+      <div class="news-title">EEVR Paper Accepted at NeurIPS 2024</div>
+      <div class="news-excerpt">Our VR-based physiological emotion dataset with contrastive language-signal pretraining accepted at NeurIPS 2024.</div>
+      <a href="https://neurips.cc/virtual/2024/poster/97493" target="_blank" class="news-source">→ NeurIPS 2024</a>
+    </div>
+  </div>
 
-  <!-- Vendor JS Files -->
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
-  <script src="assets/vendor/aos/aos.js"></script>
-  <script src="assets/vendor/typed.js/typed.umd.js"></script>
-  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
-  <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
-  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-  <script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
-  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <div class="page-footer">
+    <p>Ankush Gupta · PhD Incoming · He/They</p>
+    <p>MultiModal AI · Foundational AI · Responsible AI</p>
+  </div>
+</div>
 
-  <!-- Main JS File -->
-  <script src="assets/js/main.js"></script>
+<!-- ═══ CONTACT ═══ -->
+<div id="page-contact" class="page">
+  <div class="contact-text" style="padding:0;">
+    <div class="section-label">Contact</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,3vw,2.6rem);font-weight:700;line-height:1.1;margin-bottom:1.5rem;">Let's Connect</h2>
+    <p>I'm actively looking for <strong>research collaborations</strong> and <strong>industrial internship opportunities</strong> (summer 2027), particularly at the intersection of multimodal AI and applied machine learning.</p>
+    <p>Whether you're a researcher interested in joint work on foundational models, or an industry team looking for a collaborative PhD intern, I'd love to hear from you.</p>
+    <p>For academic inquiries, reviews, or just to talk about ideas or collabrations, feel free to reach out.</p>
+    <div class="contact-map-wrap" style="margin-top:2rem;">
+      <div class="contact-map-label">📍 West Lafayette, Indiana — Purdue University</div>
+      <div id="contact-map"></div>
+    </div>
+  </div>
 
+  <div class="contact-info" style="padding:2rem 0 0;">
+    <a href="mailto:ankushg0405@gmail.com" class="contact-item">
+      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8h18v12a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/></svg></span>
+      <div><span class="contact-item-label">Email</span><span class="contact-item-value">ankushg0405@gmail.com</span></div>
+    </a>
+    <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="contact-item">
+      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></span>
+      <div><span class="contact-item-label">LinkedIn</span><span class="contact-item-value">ankush-gupta-9a9211224</span></div>
+    </a>
+    <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" class="contact-item">
+      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 100 14 7 7 0 000-14z"/></svg></span>
+      <div><span class="contact-item-label">Google Scholar</span><span class="contact-item-value">View Publications</span></div>
+    </a>
+    <a href="https://github.com/Ankush-Gupta04" target="_blank" class="contact-item">
+      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>
+      <div><span class="contact-item-label">GitHub</span><span class="contact-item-value">Ankush-Gupta04</span></div>
+    </a>
+    <a href="https://drive.google.com/file/d/1CEiT-ZJarq0FspMWjh4azyNx75rTmXhU/view" target="_blank" class="contact-item">
+      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+      <div><span class="contact-item-label">Curriculum Vitae</span><span class="contact-item-value">Download CV (PDF)</span></div>
+    </a>
+    <div class="page-footer" style="border:none;padding:1rem 0 0;margin-top:0.5rem;">
+      <p>Ankush Gupta · PhD Incoming · He/They</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ THEME ═══ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const btn = document.getElementById('theme-btn');
+  if (html.getAttribute('data-theme') === 'dark') {
+    html.setAttribute('data-theme', 'light');
+    btn.textContent = '🌙';
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️';
+  }
+  if (window._contactMap) window._contactMap.invalidateSize();
+}
+
+/* ═══ PAGES ═══ */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active','fade-in'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  page.classList.add('active', 'fade-in');
+  const tab = document.querySelector('[data-page="' + id + '"]');
+  if (tab) tab.classList.add('active');
+  window.scrollTo(0, 0);
+  setTimeout(() => animatePage(id), 50);
+  if (id === 'contact') setTimeout(initMap, 100);
+}
+
+function animatePage(id) {
+  if (id === 'journey') {
+    positionRoadNodes();
+    document.querySelectorAll('#page-journey .journey-card:not([style*="pointer-events:none"])').forEach((el, i) => {
+      el.classList.remove('revealed');
+      void el.offsetWidth;
+      setTimeout(() => el.classList.add('revealed'), i * 90);
+    });
+  }
+  if (id === 'beyond') {
+    document.querySelectorAll('#page-beyond .beyond-card').forEach((el, i) => {
+      el.classList.remove('revealed');
+      void el.offsetWidth;
+      setTimeout(() => el.classList.add('revealed'), i * 80);
+    });
+  }
+  if (id === 'updates') {
+    document.querySelectorAll('#page-updates .news-card').forEach((el, i) => {
+      el.classList.remove('revealed');
+      void el.offsetWidth;
+      setTimeout(() => el.classList.add('revealed'), i * 80);
+    });
+  }
+  if (id === 'contact') {
+    document.querySelectorAll('#page-contact .contact-item').forEach((el, i) => {
+      el.classList.remove('revealed');
+      void el.offsetWidth;
+      setTimeout(() => el.classList.add('revealed'), i * 80);
+    });
+  }
+}
+
+/* ═══ ROAD NODE POSITIONING ═══ */
+function positionRoadNodes() {
+  const track = document.getElementById('road-track');
+  if (!track) return;
+  track.innerHTML = '';
+
+  const slots = document.querySelectorAll('#road-wrap .journey-slot');
+  const trackRect = track.getBoundingClientRect();
+  const wrapRect = document.getElementById('road-wrap').getBoundingClientRect();
+
+  const nodeConfigs = [
+    { type: 'upcoming', emoji: '🎓' },
+    { type: 'industry',  emoji: '💳' },
+    { type: 'research',  emoji: '🧠' },
+    { type: 'research',  emoji: '📚' },
+    { type: 'industry',  emoji: '⚡' },
+    { type: 'research',  emoji: '🎮' },
+    { type: 'industry',  emoji: '☁️' },
+    { type: 'education', emoji: '🏛️' },
+  ];
+
+  const leftSlots = document.querySelectorAll('#left-col .journey-slot');
+
+  leftSlots.forEach((slot, i) => {
+    if (i >= nodeConfigs.length) return;
+    const slotRect = slot.getBoundingClientRect();
+    const midY = slotRect.top + slotRect.height / 2 - trackRect.top;
+    if (midY < 0 || midY > trackRect.height) return;
+
+    const node = document.createElement('div');
+    node.className = `road-node ${nodeConfigs[i].type}`;
+    node.style.top = midY + 'px';
+    node.textContent = nodeConfigs[i].emoji;
+    node.style.fontSize = '0.7rem';
+    track.appendChild(node);
+  });
+}
+
+/* ═══ JOURNEY FILTER ═══ */
+function filterJourney(type, btn) {
+  document.querySelectorAll('.journey-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  const roadView = document.getElementById('journey-road-view');
+  const flatView = document.getElementById('journey-flat-view');
+
+  if (type === 'all') {
+    roadView.style.display = 'block';
+    flatView.classList.remove('active');
+    setTimeout(positionRoadNodes, 80);
+    return;
+  }
+
+  roadView.style.display = 'none';
+  flatView.classList.add('active');
+  flatView.innerHTML = '';
+
+  const cardData = [
+    { type: 'upcoming',  year: '2025 → Upcoming', title: 'PhD in Computer Science', org: 'Purdue University · IDEAS Lab · Dr. Aniket Bera', desc: 'Multimodal foundational models and human-AI interaction. Open to research collaborations and industrial internship for summer.', pills: ['Multimodal AI','Human-AI Interaction','Foundational Models'] },
+    { type: 'industry',  year: 'Jul 2025 – Present', title: 'Machine Learning Engineer', org: 'PayGlocal · Fintech Startup', desc: 'Real-time payment risk systems. Led IndiGo merchant onboarding as PA+TSP. Reduced false alerts by 50%+. Implemented time-series forecasting for adaptive thresholds.', pills: ['Time-Series','Risk Modeling','Fintech'] },
+    { type: 'research',  year: '2024 – 2025', title: 'HCAI Research Assistant · Melange Lab', org: 'IIIT Delhi · Prof. Pushpendra Singh & Prof. Mohan Kumar (RIT)', desc: 'Developed mental health tracker from EDA/PPG signals. Led to NeurIPS 2024 & 2025, ACM IMWUT 2025. Collaboration with CMU & University of Edinburgh.', pills: ['EDA/PPG','Emotion AI','NeurIPS \'24 & \'25','IMWUT \'25'] },
+    { type: 'research',  year: '2024 – 2025', title: 'AI Undergrad Researcher · Data Science Lab', org: 'IIIT Delhi · Prof. Mukesh Mohania', desc: 'Developed citation recommendation system using FASIS-based RAG architecture. QR-LLM research ongoing.', pills: ['RAG','Citation Recommendation','NLP'] },
+    { type: 'industry',  year: 'Jun – Aug 2024', title: 'MLE Intern', org: 'E.ON Digital Technology', desc: 'Built CI/CD pipeline chatbot for power grid workers using RAG-based framework. Optimized ML & NLP algorithms.', pills: ['RAG','CI/CD','Power Grid'] },
+    { type: 'research',  year: '2023 – 2024', title: 'HCI Undergrad Researcher · Creative Interface Lab', org: 'IIIT Delhi · Prof. Dhruv Kumar', desc: 'Gesture-tracking game with child-specific stimuli. Augmented Hindi language learning. Published at ACM India HCI 2023 & Springer SCI.', pills: ['HCI','Gesture Tracking','ACM India HCI'] },
+    { type: 'industry',  year: 'Jun – Aug 2023', title: 'Student Summer Intern', org: 'E.ON SE', desc: 'Designed & deployed automated Microsoft Azure pipeline. Increased image classification efficiency to 95%.', pills: ['Azure','Computer Vision','MLOps'] },
+    { type: 'education', year: '2021 – 2025', title: 'Bachelor of Technology, Computer Science', org: 'IIIT Delhi', desc: 'Research in Human-Centric AI, HCI, ML. TA for 4 courses. Student Senate & Disciplinary Action Committee. NTSE & KVPY scholar.', pills: ['NTSE Scholar','Student Senate','Teaching Assistant × 4'] },
+  ];
+
+  const include = (type === 'research') ? ['research','upcoming'] : (type === 'education') ? ['education','upcoming'] : [type];
+  let idx = 0;
+  cardData.filter(c => include.includes(c.type)).forEach((c, i) => {
+    const pill = c.pills.map(p => `<span class="jc-pill">${p}</span>`).join('');
+    const typeMap = { research:'type-research', industry:'type-industry', education:'type-education', upcoming:'type-upcoming' };
+    const el = document.createElement('div');
+    el.className = 'journey-card';
+    el.dataset.type = c.type;
+    el.innerHTML = `
+      <div class="journey-card-left">
+        <div class="jc-year">${c.year}</div>
+        <span class="jc-type ${typeMap[c.type]}">${c.type}</span>
+      </div>
+      <div class="journey-card-right">
+        <div class="jc-title">${c.title}</div>
+        <div class="jc-org">${c.org}</div>
+        <div class="jc-desc">${c.desc}</div>
+        <div class="jc-pills">${pill}</div>
+      </div>`;
+    flatView.appendChild(el);
+    const delay = idx * 90;
+    setTimeout(() => el.classList.add('revealed'), delay);
+    idx++;
+  });
+}
+
+/* ═══ PUB FILTER ═══ */
+function filterPubs(cat, btn) {
+  document.querySelectorAll('.pub-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.pub-card').forEach(card => {
+    card.classList.remove('visible');
+    if (cat === 'all' || card.dataset.category.includes(cat)) {
+      card.classList.add('visible');
+    }
+  });
+}
+
+/* ═══ UPDATES FILTER ═══ */
+function filterUpdates(type, btn) {
+  document.querySelectorAll('.updates-tag').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  let idx = 0;
+  document.querySelectorAll('.news-card').forEach(card => {
+    card.classList.remove('revealed');
+    const show = type === 'all' || card.dataset.updateType === type;
+    card.style.display = show ? 'block' : 'none';
+    if (show) {
+      const i = idx++;
+      void card.offsetWidth;
+      setTimeout(() => card.classList.add('revealed'), i * 80);
+    }
+  });
+}
+
+/* ═══ POETRY MODAL ═══ */
+function openCreative() {
+  document.getElementById('creative-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  closePoem();
+}
+function closeCreative() {
+  document.getElementById('creative-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeCreativeIfBg(e) {
+  if (e.target === document.getElementById('creative-overlay')) closeCreative();
+}
+
+/* Poem tag filter */
+function filterPoems(tag, btn) {
+  document.querySelectorAll('.poetry-tag').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.poetry-tile').forEach(tile => {
+    if (tag === 'all') { tile.style.display = 'flex'; return; }
+    const tags = tile.dataset.tags || '';
+    tile.style.display = tags.includes(tag) ? 'flex' : 'none';
+  });
+  closePoem();
+}
+
+/* Open inline poem reader */
+function openPoem(tile) {
+  const kind = tile.dataset.kind;
+  if (kind !== 'poem') return;
+  document.getElementById('reader-title').textContent = tile.dataset.title || '';
+  document.getElementById('reader-meta').textContent = tile.dataset.meta || '';
+  document.getElementById('reader-body').textContent = tile.dataset.body || '';
+  const reader = document.getElementById('poem-reader');
+  reader.classList.add('open');
+  reader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function closePoem() {
+  document.getElementById('poem-reader').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCreative(); });
+
+/* ═══ MAP ═══ */
+let mapInitialized = false;
+function initMap() {
+  if (mapInitialized) return;
+  mapInitialized = true;
+  const lat = 40.4237, lng = -86.9212;
+  const map = L.map('contact-map', { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 14);
+  window._contactMap = map;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+  const markerIcon = L.divIcon({
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:#A5B4FC;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`,
+    className: '', iconAnchor: [7,7]
+  });
+  L.marker([lat, lng], { icon: markerIcon }).addTo(map)
+    .bindPopup('<b style="font-family:sans-serif;font-size:0.8rem">Purdue University</b><br><span style="font-size:0.72rem;color:#888">West Lafayette, Indiana</span>')
+    .openPopup();
+}
+
+/* ═══ ABOUT INIT ANIMATION ═══ */
+document.querySelectorAll('#page-about .info-block').forEach((el, i) => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(12px)';
+  el.style.transition = `opacity 0.4s ${i*0.08}s ease, transform 0.4s ${i*0.08}s ease`;
+  setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, 200 + i * 80);
+});
+
+/* Position road nodes on load if journey is active */
+window.addEventListener('load', () => {
+  if (document.getElementById('page-journey').classList.contains('active')) {
+    setTimeout(positionRoadNodes, 200);
+  }
+});
+window.addEventListener('resize', positionRoadNodes);
+</script>
 </body>
-
 </html>
