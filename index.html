@@ -4,12 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ankush Gupta</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23111827'/><text x='50' y='72' text-anchor='middle' font-size='62' font-family='serif' fill='%23A5B4FC' font-weight='700'>A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-/* ═══ THEME VARIABLES — New Pastel Palette ═══ */
+/* ═══ VISUALLY HIDDEN (for screen readers) ═══ */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ═══ SKIP LINK ═══ */
+.skip-link {
+  position: absolute; top: -100px; left: 1rem;
+  background: var(--accent); color: var(--bg);
+  padding: 0.5rem 1rem; border-radius: 2px;
+  font-family: 'DM Mono', monospace; font-size: 0.8rem;
+  text-decoration: none; z-index: 9999;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 1rem; }
+
+/* ═══ THEME VARIABLES ═══ */
 :root[data-theme="dark"] {
   --bg: #111827;
   --surface: #1F2937;
@@ -32,6 +51,9 @@
   --road-color: #2D3748;
   --road-line: rgba(165,180,252,0.25);
   --road-glow: rgba(165,180,252,0.08);
+  --orb-a: rgba(165,180,252,0.07);
+  --orb-b: rgba(147,197,253,0.05);
+  --orb-c: rgba(196,181,253,0.06);
 }
 :root[data-theme="light"] {
   --bg: #FAF7F2;
@@ -55,6 +77,9 @@
   --road-color: #E7D8C9;
   --road-line: rgba(124,174,220,0.35);
   --road-glow: rgba(124,174,220,0.06);
+  --orb-a: rgba(124,174,220,0.08);
+  --orb-b: rgba(91,155,213,0.06);
+  --orb-c: rgba(155,142,204,0.07);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,6 +99,41 @@ body::before {
   position: fixed; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none; z-index: 999; opacity: 0.3;
+}
+
+/* ═══ AMBIENT FLOATING ORBS (shared across pages) ═══ */
+.page-orbs {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+}
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); opacity: 0;
+  animation: orbDrift 18s ease-in-out infinite;
+}
+.orb-1 { width: 420px; height: 420px; background: var(--orb-a); top: -10%; left: -8%; animation-duration: 22s; animation-delay: 0s; }
+.orb-2 { width: 320px; height: 320px; background: var(--orb-b); bottom: 5%; right: -6%; animation-duration: 18s; animation-delay: -7s; }
+.orb-3 { width: 260px; height: 260px; background: var(--orb-c); top: 40%; right: 15%; animation-duration: 25s; animation-delay: -13s; }
+
+@keyframes orbDrift {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  20%  { opacity: 1; }
+  50%  { transform: translate(30px, -25px) scale(1.05); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-15px, 20px) scale(0.98); }
+}
+
+/* Page-specific accent lines that animate in */
+.page-accent-line {
+  position: fixed; pointer-events: none; z-index: 0;
+  width: 1px; top: 0; bottom: 0;
+  background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+  opacity: 0;
+  animation: accentLineReveal 1.2s ease forwards;
+}
+.accent-line-left  { left: 3.2rem; animation-delay: 0.2s; }
+.accent-line-right { right: 3.2rem; animation-delay: 0.4s; }
+@keyframes accentLineReveal {
+  to { opacity: 0.07; }
 }
 
 /* ═══ NAV ═══ */
@@ -101,7 +161,11 @@ nav {
   transition: all 0.2s; border: none; background: none; white-space: nowrap;
 }
 .nav-tab:hover { color: var(--accent); }
-.nav-tab.active { background: var(--tag-bg); color: var(--accent); border: 1px solid rgba(165,180,252,0.25); }
+.nav-tab.active,
+.nav-tab[aria-current="page"] {
+  background: var(--tag-bg); color: var(--accent);
+  border: 1px solid rgba(165,180,252,0.25);
+}
 .nav-right { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
 .nav-cv {
   font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
@@ -118,7 +182,7 @@ nav {
 .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ═══ PAGES ═══ */
-.page { display: none; padding-top: 5rem; min-height: 100vh; }
+.page { display: none; padding-top: 5rem; min-height: 100vh; position: relative; z-index: 1; }
 .page.active { display: block; }
 .page.fade-in { animation: fadeIn 0.35s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -134,6 +198,11 @@ nav {
 .about-photo-wrap::before {
   content: ''; position: absolute; inset: -8px;
   border: 1px solid rgba(165,180,252,0.3); border-radius: 2px; transform: rotate(2deg);
+  animation: photoFrameSpin 12s ease-in-out infinite alternate;
+}
+@keyframes photoFrameSpin {
+  0%   { transform: rotate(2deg) scale(1); }
+  100% { transform: rotate(-1deg) scale(1.01); }
 }
 .photo-dark { display: var(--photo-dark); width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
 .photo-light { display: var(--photo-light); width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
@@ -152,7 +221,10 @@ nav {
   text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
   display: flex; align-items: center; justify-content: space-between;
 }
-.scholar-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 2s infinite; }
+.scholar-live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  display: inline-block; animation: pulse 2s infinite;
+}
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 .scholar-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
 .stat { text-align: center; }
@@ -186,7 +258,12 @@ h1 {
 .about-bio a:hover { color: var(--accent); }
 
 .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-top: 0; }
-.info-block { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.2rem 1.4rem; }
+.info-block {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  padding: 1.2rem 1.4rem;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.info-block:hover { border-color: rgba(165,180,252,0.3); transform: translateY(-2px); }
 .info-block-title { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.8rem; }
 .info-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
 .info-list li { font-size: 0.82rem; color: var(--text-soft); display: flex; align-items: flex-start; gap: 0.4rem; }
@@ -202,6 +279,32 @@ h1 {
 .btn-primary:hover { background: transparent; color: var(--accent); }
 .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* About page animated ticker */
+.about-ticker {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 0;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-bottom: 0.5rem;
+}
+.ticker-inner {
+  display: inline-block;
+  animation: tickerScroll 30s linear infinite;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.ticker-inner span { margin: 0 2rem; }
+.ticker-sep { color: var(--accent); opacity: 0.5; }
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
 
 /* ═══ JOURNEY PAGE ═══ */
 #page-journey { padding: 5rem 3.5rem 4rem; display: none; }
@@ -220,7 +323,6 @@ h1 {
 }
 .section-label::before { content: '§'; font-family: serif; opacity: 0.5; }
 
-/* Journey Tabs */
 .journey-tabs {
   display: flex; gap: 0; margin-bottom: 2.5rem;
   background: var(--surface); border: 1px solid var(--border);
@@ -242,78 +344,32 @@ h1 {
 
 /* ═══ JOURNEY ROAD LAYOUT ═══ */
 .journey-road-wrap {
-  display: grid;
-  grid-template-columns: 1fr 80px 1fr;
-  gap: 0;
-  max-width: 1100px;
-  position: relative;
-  margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 80px 1fr;
+  gap: 0; max-width: 1100px; position: relative; margin: 0 auto;
 }
-
-/* Central road spine */
 .road-spine {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  padding: 0.5rem 0;
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; padding: 0.5rem 0;
 }
 .road-track {
-  width: 44px;
-  background: var(--road-color);
-  border-radius: 4px;
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  min-height: 100%;
-  border: 1px solid var(--border);
+  width: 44px; background: var(--road-color); border-radius: 4px; flex: 1;
+  position: relative; overflow: hidden; min-height: 100%; border: 1px solid var(--border);
 }
-/* Road dashes */
 .road-track::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%; transform: translateX(-50%);
-  width: 3px;
-  height: 100%;
-  background: repeating-linear-gradient(
-    to bottom,
-    var(--road-line) 0px,
-    var(--road-line) 18px,
-    transparent 18px,
-    transparent 34px
-  );
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 3px; height: 100%;
+  background: repeating-linear-gradient(to bottom, var(--road-line) 0px, var(--road-line) 18px, transparent 18px, transparent 34px);
   animation: roadScroll 3s linear infinite;
 }
-@keyframes roadScroll {
-  from { background-position: 0 0; }
-  to { background-position: 0 52px; }
-}
-/* Road glow */
+@keyframes roadScroll { from { background-position: 0 0; } to { background-position: 0 52px; } }
 .road-track::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--road-glow);
-  pointer-events: none;
+  content: ''; position: absolute; inset: 0; background: var(--road-glow); pointer-events: none;
 }
-
-/* Journey node on road */
 .road-node {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  z-index: 2;
-  cursor: default;
-  transition: transform 0.2s;
-  background: var(--surface);
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; z-index: 2; cursor: default; transition: transform 0.2s; background: var(--surface);
 }
 .road-node:hover { transform: translateX(-50%) scale(1.2); }
 .road-node.research { border-color: var(--accent); box-shadow: 0 0 8px rgba(165,180,252,0.3); }
@@ -321,66 +377,27 @@ h1 {
 .road-node.education { border-color: var(--green); box-shadow: 0 0 8px rgba(110,231,183,0.3); }
 .road-node.upcoming { border-color: var(--accent3); box-shadow: 0 0 8px rgba(196,181,253,0.3); }
 
-/* connector from card to road */
-.road-connector {
-  height: 1px;
-  background: var(--border);
-  flex-shrink: 0;
-  align-self: center;
-  transition: background 0.2s;
-}
-.journey-row {
-  display: contents;
-}
-/* Left column card */
-.journey-col-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.journey-col-right {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.journey-slot {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 130px;
-  padding: 0.6rem 0;
-}
-.journey-slot.empty {
-  opacity: 0;
-  pointer-events: none;
-}
+.road-connector { height: 1px; background: var(--border); flex-shrink: 0; align-self: center; transition: background 0.2s; }
+.journey-row { display: contents; }
+.journey-col-left { display: flex; flex-direction: column; gap: 0; }
+.journey-col-right { display: flex; flex-direction: column; gap: 0; }
+.journey-slot { display: flex; flex-direction: column; justify-content: center; min-height: 130px; padding: 0.6rem 0; }
+.journey-slot.empty { opacity: 0; pointer-events: none; }
 
-/* Journey Cards new style */
 .journey-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1.2rem 1.4rem;
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-  opacity: 0;
-  transform: translateY(14px);
-  position: relative;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  padding: 1.2rem 1.4rem; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  opacity: 0; transform: translateY(14px); position: relative;
 }
 .journey-card.revealed { animation: cardIn 0.4s forwards; }
 @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
 .journey-card:hover {
-  border-color: rgba(165,180,252,0.35);
-  transform: translateY(-2px);
+  border-color: rgba(165,180,252,0.35); transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--shadow);
 }
-/* Card side accent bar */
 .journey-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 15%; bottom: 15%;
-  width: 2px;
-  border-radius: 2px;
-  background: var(--accent);
+  content: ''; position: absolute; left: 0; top: 15%; bottom: 15%;
+  width: 2px; border-radius: 2px; background: var(--accent);
 }
 .journey-card[data-type="industry"]::before { background: var(--accent2); }
 .journey-card[data-type="education"]::before { background: var(--green); }
@@ -406,24 +423,28 @@ h1 {
   border-radius: 20px; font-size: 0.6rem; font-family: 'DM Mono', monospace;
   color: var(--muted); letter-spacing: 0.05em;
 }
+.connector-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; align-self: center; }
 
-/* Road connector dots */
-.connector-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--border); flex-shrink: 0; align-self: center;
-}
-
-/* ═══ FLAT JOURNEY VIEW (for filter) ═══ */
 .journey-flat { display: none; flex-direction: column; gap: 1rem; max-width: 820px; }
 .journey-flat.active { display: flex; }
-.journey-flat .journey-card {
-  display: grid; grid-template-columns: 130px 1fr; gap: 1.4rem; align-items: start;
-}
+.journey-flat .journey-card { display: grid; grid-template-columns: 130px 1fr; gap: 1.4rem; align-items: start; }
 .journey-flat .journey-card-left { display: flex; flex-direction: column; gap: 0.4rem; }
 
 /* ═══ RESEARCH PAGE ═══ */
 #page-research { padding: 5rem 3.5rem 4rem; display: none; }
 #page-research.active { display: block; }
+
+/* Research page: animated underline on heading */
+#page-research .page-header h2 {
+  position: relative; display: inline-block;
+}
+#page-research .page-header h2::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+  background: var(--accent);
+  animation: headingUnderline 1s ease 0.4s forwards;
+}
+@keyframes headingUnderline { to { width: 100%; } }
 
 .pub-tabs { display: flex; gap: 0.4rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
 .pub-tab {
@@ -437,8 +458,15 @@ h1 {
   background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
   padding: 1.8rem; transition: border-color 0.2s, transform 0.2s; display: none;
   opacity: 0; transform: translateY(12px);
+  /* Left accent bar that grows */
+  position: relative; overflow: hidden;
+}
+.pub-card::before {
+  content: ''; position: absolute; left: 0; top: 0; width: 2px; height: 0;
+  background: var(--accent); transition: height 0.4s ease;
 }
 .pub-card.visible { display: block; animation: cardIn 0.4s forwards; }
+.pub-card.visible::before { height: 100%; }
 .pub-card:hover { border-color: rgba(165,180,252,0.35); transform: translateY(-2px); }
 .pub-venue { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
 .pub-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin-bottom: 0.55rem; line-height: 1.4; }
@@ -452,6 +480,16 @@ h1 {
 }
 .pub-link:hover { border-color: var(--accent); color: var(--accent); }
 
+/* Research page count indicator */
+.research-meta {
+  font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted);
+  margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;
+}
+.research-meta-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); animation: pulse 2s infinite;
+}
+
 /* ═══ BEYOND PAGE ═══ */
 #page-beyond { padding: 5rem 3.5rem 4rem; display: none; }
 #page-beyond.active { display: block; }
@@ -463,17 +501,30 @@ h1 {
   opacity: 0; transform: translateY(14px); position: relative; overflow: hidden;
 }
 .beyond-card.revealed { animation: cardIn 0.45s forwards; }
-.beyond-card:hover { border-color: rgba(165,180,252,0.35); transform: translateY(-3px); box-shadow: 0 8px 24px var(--shadow); }
+.beyond-card:hover {
+  border-color: rgba(165,180,252,0.35); transform: translateY(-3px);
+  box-shadow: 0 8px 24px var(--shadow);
+}
 .beyond-card.clickable::after {
   content: '↗'; position: absolute; top: 1.2rem; right: 1.2rem;
   font-size: 0.75rem; color: var(--muted); transition: color 0.2s;
 }
 .beyond-card.clickable:hover::after { color: var(--accent); }
+
+/* Beyond card shimmer on hover */
+.beyond-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(165,180,252,0.03) 50%, transparent 100%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.beyond-card:hover::before { opacity: 1; }
+
 .beyond-icon { font-size: 1.6rem; margin-bottom: 1rem; }
 .beyond-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin-bottom: 0.5rem; }
 .beyond-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.72; }
 
-/* ═══ POETRY MODAL — TILE GALLERY ═══ */
+/* ═══ POETRY MODAL ═══ */
 .creative-overlay {
   display: none; position: fixed; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.72); backdrop-filter: blur(10px);
@@ -494,97 +545,38 @@ h1 {
   display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 2;
 }
 .creative-modal-close:hover { border-color: var(--accent); color: var(--accent); }
-
-/* Modal header */
-.modal-header {
-  padding: 2rem 2rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-}
+.modal-header { padding: 2rem 2rem 1.5rem; border-bottom: 1px solid var(--border); }
 .creative-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; }
 .creative-modal h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 0.5rem; }
 .modal-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 1rem; }
-
-/* Tag filter row */
 .poetry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .poetry-tag {
   padding: 0.22rem 0.75rem; border: 1px solid var(--border); border-radius: 20px;
   font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--muted);
-  cursor: pointer; transition: all 0.2s; background: none; text-transform: lowercase;
-  letter-spacing: 0.04em;
+  cursor: pointer; transition: all 0.2s; background: none; text-transform: lowercase; letter-spacing: 0.04em;
 }
 .poetry-tag.active, .poetry-tag:hover { border-color: var(--accent3); color: var(--accent3); background: rgba(196,181,253,0.08); }
 
-/* Tile grid */
-.poetry-tiles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--border);
-}
+.poetry-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); }
 .poetry-tile {
-  background: var(--bg);
-  padding: 1.6rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  position: relative;
-  overflow: hidden;
-  min-height: 190px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  background: var(--bg); padding: 1.6rem; cursor: pointer; transition: background 0.2s;
+  position: relative; overflow: hidden; min-height: 190px;
+  display: flex; flex-direction: column; justify-content: space-between;
 }
 .poetry-tile:hover { background: var(--surface); }
-.poetry-tile.external::after {
-  content: '↗';
-  position: absolute; top: 1rem; right: 1rem;
-  font-size: 0.72rem; color: var(--muted);
-}
-.tile-kind {
-  font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem;
-}
+.poetry-tile.external::after { content: '↗'; position: absolute; top: 1rem; right: 1rem; font-size: 0.72rem; color: var(--muted); }
+.tile-kind { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
 .tile-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1rem; color: var(--text); margin-bottom: 0.4rem; line-height: 1.3; }
 .tile-preview { font-size: 0.78rem; color: var(--text-soft); line-height: 1.6; flex: 1; }
 .tile-meta { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.8rem; }
-.tile-tag {
-  padding: 0.1rem 0.45rem; border: 1px solid var(--border); border-radius: 20px;
-  font-size: 0.58rem; font-family: 'DM Mono', monospace; color: var(--muted);
-  letter-spacing: 0.04em;
-}
-/* Tile accent color strip at top */
-.poetry-tile::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--accent3);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
+.tile-tag { padding: 0.1rem 0.45rem; border: 1px solid var(--border); border-radius: 20px; font-size: 0.58rem; font-family: 'DM Mono', monospace; color: var(--muted); letter-spacing: 0.04em; }
+.poetry-tile::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent3); opacity: 0; transition: opacity 0.2s; }
 .poetry-tile:hover::before { opacity: 1; }
-/* Large background letter */
-.tile-bg-letter {
-  position: absolute; bottom: -0.5rem; right: 0.5rem;
-  font-family: 'Playfair Display', serif;
-  font-size: 5rem; font-weight: 700;
-  color: var(--accent3); opacity: 0.04;
-  pointer-events: none; line-height: 1; user-select: none;
-}
+.tile-bg-letter { position: absolute; bottom: -0.5rem; right: 0.5rem; font-family: 'Playfair Display', serif; font-size: 5rem; font-weight: 700; color: var(--accent3); opacity: 0.04; pointer-events: none; line-height: 1; user-select: none; }
 
-/* Poem reader panel (inline expand) */
-.poem-reader {
-  display: none;
-  padding: 2rem;
-  border-top: 1px solid var(--border);
-  animation: fadeIn 0.25s ease;
-  position: relative;
-}
+.poem-reader { display: none; padding: 2rem; border-top: 1px solid var(--border); animation: fadeIn 0.25s ease; position: relative; }
 .poem-reader.open { display: block; }
-.poem-reader-close {
-  position: absolute; top: 1.2rem; right: 1.2rem;
-  background: none; border: 1px solid var(--border); border-radius: 2px;
-  color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 0.25rem 0.6rem;
-  font-family: 'DM Mono', monospace; transition: all 0.2s;
-}
+.poem-reader-close { position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: 1px solid var(--border); border-radius: 2px; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 0.25rem 0.6rem; font-family: 'DM Mono', monospace; transition: all 0.2s; }
 .poem-reader-close:hover { border-color: var(--accent); color: var(--accent); }
 .poem-reader-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.4rem; color: var(--accent3); margin-bottom: 0.3rem; }
 .poem-reader-meta { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-bottom: 1.5rem; letter-spacing: 0.08em; }
@@ -593,6 +585,19 @@ h1 {
 /* ═══ UPDATES PAGE ═══ */
 #page-updates { padding: 5rem 3.5rem 4rem; display: none; }
 #page-updates.active { display: block; }
+
+/* Updates animated header accent */
+#page-updates .page-header {
+  position: relative;
+}
+#page-updates .page-header::after {
+  content: '';
+  position: absolute; bottom: -1rem; left: 0;
+  width: 48px; height: 2px;
+  background: var(--accent2);
+  animation: growLine 0.8s ease 0.3s both;
+}
+@keyframes growLine { from { width: 0; } to { width: 48px; } }
 
 .updates-filter { display: flex; gap: 0.4rem; margin-bottom: 2rem; flex-wrap: wrap; }
 .updates-tag {
@@ -607,26 +612,28 @@ h1 {
   background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
   padding: 1.5rem; transition: border-color 0.2s;
   opacity: 0; transform: translateY(12px);
+  position: relative; overflow: hidden;
 }
+/* Shimmer strip */
+.news-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.news-card:hover::after { transform: scaleX(1); }
 .news-card.revealed { animation: cardIn 0.4s forwards; }
 .news-card:hover { border-color: rgba(147,197,253,0.35); }
 .news-card-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; flex-wrap: wrap; }
 .news-venue { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; color: var(--accent2); text-transform: uppercase; }
-.news-badge {
-  padding: 0.14rem 0.5rem; border-radius: 20px; font-size: 0.58rem;
-  font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid;
-}
+.news-badge { padding: 0.14rem 0.5rem; border-radius: 20px; font-size: 0.58rem; font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid; }
 .badge-conference { border-color: var(--accent); color: var(--accent); }
 .badge-education { border-color: var(--green); color: var(--green); }
 .badge-visiting { border-color: var(--accent3); color: var(--accent3); }
 .news-title { font-size: 0.92rem; line-height: 1.5; margin-bottom: 0.5rem; color: var(--text); }
 .news-excerpt { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
-.news-source {
-  display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.75rem;
-  font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--accent2);
-  text-decoration: none; letter-spacing: 0.05em; border: 1px solid rgba(147,197,253,0.3);
-  padding: 0.2rem 0.6rem; border-radius: 2px; transition: all 0.2s;
-}
+.news-source { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.75rem; font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--accent2); text-decoration: none; letter-spacing: 0.05em; border: 1px solid rgba(147,197,253,0.3); padding: 0.2rem 0.6rem; border-radius: 2px; transition: all 0.2s; }
 .news-source:hover { color: var(--text); border-color: var(--accent2); }
 
 /* ═══ CONTACT PAGE ═══ */
@@ -641,7 +648,17 @@ h1 {
   background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
   text-decoration: none; transition: border-color 0.2s, transform 0.15s;
   opacity: 0; transform: translateX(12px);
+  position: relative; overflow: hidden;
 }
+/* Contact item pulse on hover */
+.contact-item::after {
+  content: '';
+  position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); opacity: 0;
+  transition: opacity 0.2s;
+}
+.contact-item:hover::after { opacity: 1; animation: pulse 1.5s infinite; }
 .contact-item.revealed { animation: slideRight 0.4s forwards; }
 @keyframes slideRight { to { opacity: 1; transform: translateX(0); } }
 .contact-item:hover { border-color: var(--accent); transform: translateX(3px); }
@@ -653,10 +670,7 @@ h1 {
 #contact-map { height: 200px; width: 100%; }
 
 /* ═══ FOOTER ═══ */
-.page-footer {
-  padding: 2rem 3.5rem; border-top: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: center; margin-top: 3rem;
-}
+.page-footer { padding: 2rem 3.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; }
 .page-footer p { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.04em; }
 
 /* ═══ RESPONSIVE ═══ */
@@ -680,6 +694,7 @@ h1 {
   .journey-slot.empty { display: none; }
   .poetry-tiles { grid-template-columns: 1fr 1fr; }
   .page-footer { flex-direction: column; gap: 0.4rem; text-align: center; padding: 1.4rem; }
+  .accent-line-left, .accent-line-right { display: none; }
 }
 @media (max-width: 600px) {
   .beyond-grid { grid-template-columns: 1fr; }
@@ -689,63 +704,101 @@ h1 {
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo" onclick="showPage('about')">Ankush Gupta</div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" data-page="about" onclick="showPage('about')">About</button>
-    <button class="nav-tab" data-page="journey" onclick="showPage('journey')">Journey</button>
-    <button class="nav-tab" data-page="research" onclick="showPage('research')">Research</button>
-    <button class="nav-tab" data-page="beyond" onclick="showPage('beyond')">Beyond</button>
-    <button class="nav-tab" data-page="updates" onclick="showPage('updates')">Updates</button>
-    <button class="nav-tab" data-page="contact" onclick="showPage('contact')">Contact</button>
+<!-- Skip navigation for keyboard/screen reader users -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Ambient background orbs (decorative, hidden from AT) -->
+<div class="page-orbs" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<!-- Subtle vertical accent lines -->
+<div class="page-accent-line accent-line-left" aria-hidden="true"></div>
+<div class="page-accent-line accent-line-right" aria-hidden="true"></div>
+
+<nav aria-label="Site navigation">
+  <div class="nav-logo" onclick="showPage('about')" role="link" tabindex="0" aria-label="Ankush Gupta — go to About page" onkeydown="if(event.key==='Enter')showPage('about')">Ankush Gupta</div>
+  <div class="nav-tabs" role="tablist" aria-label="Page sections">
+    <button class="nav-tab active" role="tab" data-page="about" onclick="showPage('about')" aria-current="page">About</button>
+    <button class="nav-tab" role="tab" data-page="journey" onclick="showPage('journey')">Journey</button>
+    <button class="nav-tab" role="tab" data-page="research" onclick="showPage('research')">Research</button>
+    <button class="nav-tab" role="tab" data-page="beyond" onclick="showPage('beyond')">Beyond</button>
+    <button class="nav-tab" role="tab" data-page="updates" onclick="showPage('updates')">Updates</button>
+    <button class="nav-tab" role="tab" data-page="contact" onclick="showPage('contact')">Contact</button>
   </div>
   <div class="nav-right">
-    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" id="theme-btn">☀️</button>
-    <a href="https://drive.google.com/file/d/1CEiT-ZJarq0FspMWjh4azyNx75rTmXhU/view" target="_blank" class="nav-cv">CV ↗</a>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light/dark colour scheme" id="theme-btn">
+      <span aria-hidden="true">☀️</span>
+    </button>
+    <a href="https://drive.google.com/file/d/1CEiT-ZJarq0FspMWjh4azyNx75rTmXhU/view" target="_blank" class="nav-cv" aria-label="Download CV (opens in new tab)">CV <span aria-hidden="true">↗</span></a>
   </div>
 </nav>
 
+<!-- Main content landmark -->
+<main id="main-content">
+
 <!-- ═══ ABOUT ═══ -->
-<div id="page-about" class="page active fade-in">
+<div id="page-about" class="page active fade-in" role="tabpanel" aria-labelledby="tab-about">
+  <!-- Animated ticker -->
+  <div class="about-ticker" aria-hidden="true" style="grid-column:1/-1;">
+    <span class="ticker-inner">
+      <span>PhD CS @ Purdue</span><span class="ticker-sep">·</span>
+      <span>Multimodal AI</span><span class="ticker-sep">·</span>
+      <span>Foundational Models</span><span class="ticker-sep">·</span>
+      <span>Responsible AI</span><span class="ticker-sep">·</span>
+      <span>NeurIPS 2024 &amp; 2025</span><span class="ticker-sep">·</span>
+      <span>PhD CS @ Purdue</span><span class="ticker-sep">·</span>
+      <span>Multimodal AI</span><span class="ticker-sep">·</span>
+      <span>Foundational Models</span><span class="ticker-sep">·</span>
+      <span>Responsible AI</span><span class="ticker-sep">·</span>
+      <span>NeurIPS 2024 &amp; 2025</span><span class="ticker-sep">·</span>
+      <span>PhD CS @ Purdue</span><span class="ticker-sep">·</span>
+      <span>Multimodal AI</span><span class="ticker-sep">·</span>
+      <span>Foundational Models</span><span class="ticker-sep">·</span>
+      <span>Responsible AI</span><span class="ticker-sep">·</span>
+      <span>NeurIPS 2024 &amp; 2025</span><span class="ticker-sep">·</span>
+    </span>
+  </div>
+
   <div class="about-left">
     <div class="about-photo-wrap">
-      <img src="ankush.jpg" class="photo-dark" alt="Ankush Gupta">
-      <img src="ankush_light.jpeg" class="photo-light" alt="Ankush Gupta">
+      <img src="ankush.jpg" class="photo-dark" alt="Ankush Gupta, smiling portrait">
+      <img src="ankush_light.jpeg" class="photo-light" alt="Ankush Gupta, smiling portrait">
     </div>
 
-    <div class="scholar-card">
+    <div class="scholar-card" aria-label="Google Scholar citation statistics">
       <div class="scholar-card-title">
-        <span><a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2);text-decoration:none;">Google Scholar</a></span>
-        <span class="scholar-live-dot" title="Stats from profile"></span>
+        <span><a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2);text-decoration:none;" aria-label="Google Scholar profile (opens in new tab)">Google Scholar</a></span>
+        <span class="scholar-live-dot" aria-hidden="true" title="Stats from profile"></span>
       </div>
       <div class="scholar-stats">
-        <div class="stat"><span class="stat-num">19</span><span class="stat-label">Citations</span></div>
-        <div class="stat"><span class="stat-num">3</span><span class="stat-label">h-index</span></div>
-        <div class="stat"><span class="stat-num">0</span><span class="stat-label">i10-index</span></div>
+        <div class="stat"><span class="stat-num" aria-label="19 citations">19</span><span class="stat-label" aria-hidden="true">Citations</span></div>
+        <div class="stat"><span class="stat-num" aria-label="h-index 3">3</span><span class="stat-label" aria-hidden="true">h-index</span></div>
+        <div class="stat"><span class="stat-num" aria-label="i10-index 0">0</span><span class="stat-label" aria-hidden="true">i10-index</span></div>
       </div>
       <p style="font-size:0.65rem;color:var(--muted);margin-top:0.8rem;font-family:'DM Mono',monospace;">
         <span style="color:rgba(136,136,136,0.5);margin-left:0.5rem;">last updated Apr 2026</span>
       </p>
     </div>
 
-    <div class="social-row">
-      <a class="social-link" href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" title="LinkedIn">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+    <div class="social-row" role="list" aria-label="Social and contact links">
+      <a class="social-link" href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" aria-label="LinkedIn profile (opens in new tab)" role="listitem">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
       </a>
-      <a class="social-link" href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" title="Google Scholar">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 100 14 7 7 0 000-14z"/></svg>
+      <a class="social-link" href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" aria-label="Google Scholar publications (opens in new tab)" role="listitem">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 100 14 7 7 0 000-14z"/></svg>
       </a>
-      <a class="social-link" href="https://github.com/Ankush-Gupta04" target="_blank" title="GitHub">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      <a class="social-link" href="https://github.com/Ankush-Gupta04" target="_blank" aria-label="GitHub profile (opens in new tab)" role="listitem">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
       </a>
-      <a class="social-link" href="mailto:ankushg0405@gmail.com" title="Email">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8h18v12a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/></svg>
+      <a class="social-link" href="mailto:ankushg0405@gmail.com" aria-label="Send email to ankushg0405@gmail.com" role="listitem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 8l9 6 9-6M3 8h18v12a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/></svg>
       </a>
     </div>
   </div>
 
   <div class="about-right">
-    <div class="page-eyebrow">PhD Incoming · CS Researcher · Multimodal Learning</div>
     <h1>Ankush Gupta</h1>
     <p style="font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;color:var(--muted);margin-bottom:0.8rem;text-transform:uppercase;">He / They</p>
     <p class="hero-sub">Foundational &amp; Responsible AI</p>
@@ -764,24 +817,22 @@ h1 {
         <strong><a href="https://chcc.ai/" target="_blank">Prof. Pushpendra Singh</a></strong> and
         Prof. Mohan Kumar. I also worked on <strong>scholarly recommendation systems</strong> using structured representations and graph-based methods with
         <strong><a href="https://ads-ai.github.io/" target="_blank">Prof. Mukesh Mohania</a></strong>.
-        This work led to publications at <strong>NeurIPS 2024 &amp; 2025</strong>, <strong>ACM IMWUT 2025</strong>, and <strong>ACM India HCI 2023</strong>.
+        This work led to publications at <strong>NeurIPS 2024 &amp; 2025</strong>, <strong>ACM IMWUT 2025</strong>, and minor revision at<strong> TACL, PVLDB </strong>.
       </p>
-      <p>
-        I have also briefly worked on <strong>applied machine learning systems</strong> and scalable ML pipelines for time-series modeling in the fintech domain.
-      </p>
+      <p>I have also briefly worked on <strong>applied machine learning systems</strong> and scalable ML pipelines for time-series modeling in the fintech domain.</p>
       <p>I am interested in <strong>research collaborations</strong> and <strong>summer internships</strong>.</p>
     </div>
 
     <div class="hero-cta">
-      <a href="#" class="btn btn-primary" onclick="showPage('research');return false;">View Research</a>
-      <a href="#" class="btn btn-ghost" onclick="showPage('contact');return false;">Get in Touch</a>
+      <a href="#research" class="btn btn-primary" onclick="showPage('research');return false;">View Research</a>
+      <a href="#contact" class="btn btn-ghost" onclick="showPage('contact');return false;">Get in Touch</a>
     </div>
   </div>
 
-  <div class="info-grid" style="grid-column:1/-1;">
-    <div class="info-block">
-      <div class="info-block-title">Academic Honors</div>
-      <ul class="info-list">
+  <div class="info-grid" style="grid-column:1/-1;" role="list" aria-label="Key information">
+    <div class="info-block" role="listitem">
+      <div class="info-block-title" id="honors-heading">Academic Honors</div>
+      <ul class="info-list" aria-labelledby="honors-heading">
         <li>Published at NeurIPS '24 &amp; '25</li>
         <li>Published at IMWUT '25, TACL '26</li>
         <li>Google DeepMind Symposium Invitee, 2024</li>
@@ -789,9 +840,9 @@ h1 {
         <li>NTSE Scholar, 2019</li>
       </ul>
     </div>
-    <div class="info-block">
-      <div class="info-block-title">Research Interests</div>
-      <ul class="info-list">
+    <div class="info-block" role="listitem">
+      <div class="info-block-title" id="interests-heading">Research Interests</div>
+      <ul class="info-list" aria-labelledby="interests-heading">
         <li>Multimodal Foundational Models</li>
         <li>Human-Centered AI</li>
         <li>Time-Series Signal Processing</li>
@@ -799,17 +850,17 @@ h1 {
         <li>NLP &amp; Society</li>
       </ul>
     </div>
-    <div class="info-block">
-      <div class="info-block-title">Service &amp; Community</div>
-      <ul class="info-list">
+    <div class="info-block" role="listitem">
+      <div class="info-block-title" id="service-heading">Service &amp; Community</div>
+      <ul class="info-list" aria-labelledby="service-heading">
         <li>Workshop Chair, Queer in AI @ NAACL 2025</li>
         <li>Reviewer: ACL 2026, AAAI 2025, ACM CHI 2025, NeurIPS 2025</li>
         <li>Student Senate, IIIT Delhi</li>
       </ul>
     </div>
-    <div class="info-block">
-      <div class="info-block-title">Teaching</div>
-      <ul class="info-list">
+    <div class="info-block" role="listitem">
+      <div class="info-block-title" id="teaching-heading">Teaching</div>
+      <ul class="info-list" aria-labelledby="teaching-heading">
         <li>TA · Interactive Systems</li>
         <li>TA · Human-Centered AI</li>
         <li>TA · Intro to Programming</li>
@@ -825,196 +876,133 @@ h1 {
 </div>
 
 <!-- ═══ JOURNEY ═══ -->
-<div id="page-journey" class="page">
-  <div class="section-label">Career Overview</div>
+<div id="page-journey" class="page" role="tabpanel" aria-labelledby="tab-journey">
+  <div class="section-label" aria-hidden="true">Career Overview</div>
   <div class="page-header">
     <h2>Experience Timeline</h2>
     <p>An overview of my work across academia, research, and industry, highlighting key roles and contributions.</p>
   </div>
 
-  <div class="journey-tabs">
-    <button class="journey-tab active" data-journey="all" onclick="filterJourney('all',this)">
-      <span style="width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block;"></span> All
+  <div class="journey-tabs" role="tablist" aria-label="Filter timeline by category">
+    <button class="journey-tab active" role="tab" aria-selected="true" data-journey="all" onclick="filterJourney('all',this)">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block;" aria-hidden="true"></span> All
     </button>
-    <button class="journey-tab" data-journey="education" onclick="filterJourney('education',this)">
-      <span class="tab-dot"></span> Education
+    <button class="journey-tab" role="tab" aria-selected="false" data-journey="education" onclick="filterJourney('education',this)">
+      <span class="tab-dot" aria-hidden="true"></span> Education
     </button>
-    <button class="journey-tab" data-journey="research" onclick="filterJourney('research',this)">
-      <span class="tab-dot"></span> Research
+    <button class="journey-tab" role="tab" aria-selected="false" data-journey="research" onclick="filterJourney('research',this)">
+      <span class="tab-dot" aria-hidden="true"></span> Research
     </button>
-    <button class="journey-tab" data-journey="industry" onclick="filterJourney('industry',this)">
-      <span class="tab-dot"></span> Industry
+    <button class="journey-tab" role="tab" aria-selected="false" data-journey="industry" onclick="filterJourney('industry',this)">
+      <span class="tab-dot" aria-hidden="true"></span> Industry
     </button>
   </div>
 
-  <!-- ROAD VIEW — shown when "All" is selected -->
-  <div id="journey-road-view">
+  <div id="journey-road-view" aria-label="Career timeline in road layout">
     <div class="journey-road-wrap" id="road-wrap">
-      <!-- Left column -->
       <div class="journey-col-left" id="left-col">
-
-        <!-- Slot 1: upcoming PhD (right side, so left is empty) -->
         <div class="journey-slot empty" data-slot="0">
-          <div class="journey-card" data-type="upcoming" style="opacity:0;pointer-events:none;"></div>
+          <div class="journey-card" data-type="upcoming" style="opacity:0;pointer-events:none;" aria-hidden="true"></div>
         </div>
-
-        <!-- Slot 2: MLE PayGlocal (LEFT) -->
         <div class="journey-slot" data-slot="1">
-          <div class="journey-card revealed" data-type="industry" style="animation-delay:0.15s">
-            <div class="jc-year">Jul 2025 – May 2026</div>
-            <span class="jc-type type-industry">Industry</span>
-            <div class="jc-title">Machine Learning Engineer</div>
+          <article class="journey-card revealed" data-type="industry" style="animation-delay:0.15s">
+            <div class="jc-year"><time>Jul 2025 – May 2026</time></div>
+            <span class="jc-type type-industry">Industry<span class="sr-only"> role</span></span>
+            <h3 class="jc-title">Machine Learning Engineer</h3>
             <div class="jc-org">PayGlocal · Fintech Startup</div>
-            <div class="jc-desc">Real-time payment risk systems. Designed time-series signal-based personalized risk model. Reduced false alerts by 50%+.</div>
-            <div class="jc-pills"><span class="jc-pill">Time-Series</span><span class="jc-pill">Risk Modeling</span><span class="jc-pill">Fintech</span></div>
-          </div>
+            <p class="jc-desc">Real-time payment risk systems. Designed time-series signal-based personalized risk model. Reduced false alerts by 50%+.</p>
+            <div class="jc-pills" aria-label="Technologies"><span class="jc-pill">Time-Series</span><span class="jc-pill">Risk Modeling</span><span class="jc-pill">Fintech</span></div>
+          </article>
         </div>
-
-        <!-- Slot 3: HCAI Research (empty — right side) -->
         <div class="journey-slot empty" data-slot="2"></div>
-
-        <!-- Slot 4: DS Lab Research (LEFT) -->
         <div class="journey-slot" data-slot="3">
-          <div class="journey-card revealed" data-type="research" style="animation-delay:0.30s">
-            <div class="jc-year">2024 – 2025</div>
-            <span class="jc-type type-research">Research</span>
-            <div class="jc-title">AI Undergrad Researcher · Data Science Lab</div>
+          <article class="journey-card revealed" data-type="research" style="animation-delay:0.30s">
+            <div class="jc-year"><time>2024 – 2025</time></div>
+            <span class="jc-type type-research">Research<span class="sr-only"> role</span></span>
+            <h3 class="jc-title">AI Undergrad Researcher · Data Science Lab</h3>
             <div class="jc-org">IIIT Delhi · Prof. Mukesh Mohania</div>
-            <div class="jc-desc">Developed a taxonomy-aligned citation recommendation system combining hierarchical DAG representations, entity matching, and semantic retrieval for context-aware citation generation and placement.</div>
-            <div class="jc-pills">
-  <span class="jc-pill">Information Retrieval</span>
-  <span class="jc-pill">Graph-Based Modeling</span>
-  <span class="jc-pill">Semantic Search</span>
-  <span class="jc-pill">NLP</span>
-</div>
-          </div>
+            <p class="jc-desc">Developed a taxonomy-aligned citation recommendation system combining hierarchical DAG representations, entity matching, and semantic retrieval for context-aware citation generation and placement.</p>
+            <div class="jc-pills" aria-label="Technologies"><span class="jc-pill">Information Retrieval</span><span class="jc-pill">Graph-Based Modeling</span><span class="jc-pill">Semantic Search</span><span class="jc-pill">NLP</span></div>
+          </article>
         </div>
-
-        <!-- Slot 5: E.ON 2024 MLE Intern (empty — right side) -->
         <div class="journey-slot empty" data-slot="4"></div>
-
-        <!-- Slot 6: HCI Researcher (LEFT) -->
         <div class="journey-slot" data-slot="5">
-          <div class="journey-card revealed" data-type="research" style="animation-delay:0.45s">
-            <div class="jc-year">2023 – 2024</div>
-            <span class="jc-type type-research">Research</span>
-            <div class="jc-title">HCI Researcher · Creative Interface Lab</div>
+          <article class="journey-card revealed" data-type="research" style="animation-delay:0.45s">
+            <div class="jc-year"><time>2023 – 2024</time></div>
+            <span class="jc-type type-research">Research<span class="sr-only"> role</span></span>
+            <h3 class="jc-title">HCI Researcher · Creative Interface Lab</h3>
             <div class="jc-org">IIIT Delhi · Dr. Anmol Srivastava</div>
-            <div class="jc-desc">Gesture-tracking game for children using RAGs and RealSense depth motion. Augmented Hindi language learning. Published at ACM India HCI 2023.</div>
-            <div class="jc-pills"><span class="jc-pill">HCI</span><span class="jc-pill">Gesture Tracking</span><span class="jc-pill">Assistive Tech</span></div>
-          </div>
+            <p class="jc-desc">Gesture-tracking game for children using RAGs and RealSense depth motion. Augmented Hindi language learning. Published at ACM India HCI 2023.</p>
+            <div class="jc-pills" aria-label="Technologies"><span class="jc-pill">HCI</span><span class="jc-pill">Gesture Tracking</span><span class="jc-pill">Assistive Tech</span></div>
+          </article>
         </div>
-
-        <!-- Slot 7: E.ON Summer Intern 2023 (empty — right side) -->
         <div class="journey-slot empty" data-slot="6"></div>
-
-        <!-- Slot 8: IIIT Delhi education (LEFT) -->
         <div class="journey-slot" data-slot="7">
-          <div class="journey-card revealed" data-type="education" style="animation-delay:0.60s">
-            <div class="jc-year">2021 – 2025</div>
-            <span class="jc-type type-education">Education</span>
-            <div class="jc-title">B.Tech · Computer Science</div>
+          <article class="journey-card revealed" data-type="education" style="animation-delay:0.60s">
+            <div class="jc-year"><time>2021 – 2025</time></div>
+            <span class="jc-type type-education">Education<span class="sr-only"> entry</span></span>
+            <h3 class="jc-title">B.Tech · Computer Science</h3>
             <div class="jc-org">IIIT Delhi</div>
-            <div class="jc-desc">Research in ML, HCAI, HCI. TA for 4 courses. Student Senate & Disciplinary Action Committee..</div>
-            <div class="jc-pills"><span class="jc-pill">AI Researcher</span><span class="jc-pill">A* Conference </span><span class="jc-pill">Student Senate</span><span class="jc-pill">TA × 4</span></div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Road spine -->
-      <div class="road-spine">
-        <div class="road-track" id="road-track">
-          <!-- Nodes positioned via JS -->
+            <p class="jc-desc">Research in ML, HCAI, HCI. TA for 4 courses. Student Senate &amp; Disciplinary Action Committee.</p>
+            <div class="jc-pills" aria-label="Highlights"><span class="jc-pill">AI Researcher</span><span class="jc-pill">A* Conference</span><span class="jc-pill">Student Senate</span><span class="jc-pill">TA × 4</span></div>
+          </article>
         </div>
       </div>
 
-      <!-- Right column -->
+      <div class="road-spine" aria-hidden="true">
+        <div class="road-track" id="road-track"></div>
+      </div>
+
       <div class="journey-col-right" id="right-col">
-
-        <!-- Slot 1: upcoming PhD (RIGHT) -->
         <div class="journey-slot" data-slot="0">
-          <div class="journey-card revealed" data-type="upcoming" style="animation-delay:0.08s">
-            <div class="jc-year">2026 → Upcoming</div>
-            <span class="jc-type type-upcoming">Upcoming</span>
-            <div class="jc-title">PhD in Computer Science</div>
+          <article class="journey-card revealed" data-type="upcoming" style="animation-delay:0.08s">
+            <div class="jc-year"><time>2026 → Upcoming</time></div>
+            <span class="jc-type type-upcoming">Upcoming<span class="sr-only"> role</span></span>
+            <h3 class="jc-title">PhD in Computer Science</h3>
             <div class="jc-org">Purdue University · IDEAS Lab · Dr. Aniket Bera</div>
-            <div class="jc-desc">Working on multimodal foundation models, with a focus on building scalable and responsible AI systems.</div>
-            <div class="jc-pills">
-  <span class="jc-pill">Multimodal Systems</span>
-  <span class="jc-pill">Foundation Models</span>
-  <span class="jc-pill">Robustness</span>
-  <span class="jc-pill">Responsible AI</span>
-</div>
-          </div>
+            <p class="jc-desc">Working on multimodal foundation models, with a focus on building scalable and responsible AI systems.</p>
+            <div class="jc-pills" aria-label="Focus areas"><span class="jc-pill">Multimodal Systems</span><span class="jc-pill">Foundation Models</span><span class="jc-pill">Robustness</span><span class="jc-pill">Responsible AI</span></div>
+          </article>
         </div>
-
-        <!-- Slot 2: empty (MLE PayGlocal on left) -->
         <div class="journey-slot empty" data-slot="1"></div>
-
-        <!-- Slot 3: HCAI Melange (RIGHT) -->
         <div class="journey-slot" data-slot="2">
-          <div class="journey-card revealed" data-type="research" style="animation-delay:0.22s">
-            <div class="jc-year">2023 – 2026</div>
-            <span class="jc-type type-research">Research</span>
-            <div class="jc-title">HCAI Research Assistant · Melange Lab</div>
+          <article class="journey-card revealed" data-type="research" style="animation-delay:0.22s">
+            <div class="jc-year"><time>2023 – 2026</time></div>
+            <span class="jc-type type-research">Research<span class="sr-only"> role</span></span>
+            <h3 class="jc-title">HCAI Research Assistant · Melange Lab</h3>
             <div class="jc-org">IIIT Delhi · Prof. Pushpendra Singh &amp; Prof. Mohan Kumar (RIT)</div>
-            <div class="jc-desc">Built multimodal emotion recognition systems using physiological signals, spanning large-scale benchmarking, dataset development, and real-world data collection frameworks.</div>
-            <div class="jc-pills">
-  <span class="jc-pill">Physiological Signals</span>
-  <span class="jc-pill">Multimodal Learning</span>
-  <span class="jc-pill">Affective Computing</span>
-  <span class="jc-pill">Benchmarking</span>
-</div>
-          </div>
+            <p class="jc-desc">Built multimodal emotion recognition systems using physiological signals, spanning large-scale benchmarking, dataset development, and real-world data collection frameworks.</p>
+            <div class="jc-pills" aria-label="Technologies"><span class="jc-pill">Physiological Signals</span><span class="jc-pill">Multimodal Learning</span><span class="jc-pill">Affective Computing</span><span class="jc-pill">Benchmarking</span></div>
+          </article>
         </div>
-
-        <!-- Slot 4: empty (DS Lab on left) -->
         <div class="journey-slot empty" data-slot="3"></div>
-
-        <!-- Slot 5: E.ON 2024 MLE Intern (RIGHT) -->
         <div class="journey-slot" data-slot="4">
-          <div class="journey-card revealed" data-type="industry" style="animation-delay:0.37s">
-            <div class="jc-year">Jun – Aug 2024</div>
-            <span class="jc-type type-industry">Industry</span>
-            <div class="jc-title">MLE Intern</div>
+          <article class="journey-card revealed" data-type="industry" style="animation-delay:0.37s">
+            <div class="jc-year"><time>Jun – Aug 2024</time></div>
+            <span class="jc-type type-industry">Industry<span class="sr-only"> role</span></span>
+            <h3 class="jc-title">MLE Intern</h3>
             <div class="jc-org">E.ON Digital Technology</div>
-            <div class="jc-desc">Developed a CI/CD pipeline chatbot for power grid operations, reducing workflow overhead and improving usability, alongside optimizing ML/NLP models for intelligent automation in installation and maintenance tasks.</div>
-            <div class="jc-pills">
-  <span class="jc-pill">MLOps</span>
-  <span class="jc-pill">CI/CD Systems</span>
-  <span class="jc-pill">Conversational AI</span>
-  <span class="jc-pill">Industrial AI</span>
-</div>
-          </div>
+            <p class="jc-desc">Developed a CI/CD pipeline chatbot for power grid operations, reducing workflow overhead and improving usability, alongside optimizing ML/NLP models for intelligent automation.</p>
+            <div class="jc-pills" aria-label="Technologies"><span class="jc-pill">MLOps</span><span class="jc-pill">CI/CD Systems</span><span class="jc-pill">Conversational AI</span><span class="jc-pill">Industrial AI</span></div>
+          </article>
         </div>
-
-        <!-- Slot 6: empty (HCI Researcher on left) -->
         <div class="journey-slot empty" data-slot="5"></div>
-
-        <!-- Slot 7: E.ON Summer Intern 2023 (RIGHT) -->
         <div class="journey-slot" data-slot="6">
-          <div class="journey-card revealed" data-type="industry" style="animation-delay:0.52s">
-            <div class="jc-year">Jun – Aug 2023</div>
-            <span class="jc-type type-industry">Industry</span>
-            <div class="jc-title">Student Summer Intern</div>
+          <article class="journey-card revealed" data-type="industry" style="animation-delay:0.52s">
+            <div class="jc-year"><time>Jun – Aug 2023</time></div>
+            <span class="jc-type type-industry">Industry<span class="sr-only"> role</span></span>
+            <h3 class="jc-title">Student Summer Intern</h3>
             <div class="jc-org">E.ON SE</div>
-            <div class="jc-desc">Automated Microsoft Azure pipeline. Increased image classification efficiency to 95%, reduced computational overhead by 5%.</div>
-            <div class="jc-pills"><span class="jc-pill">Azure</span><span class="jc-pill">Computer Vision</span><span class="jc-pill">MLOps</span></div>
-          </div>
+            <p class="jc-desc">Automated Microsoft Azure pipeline. Increased image classification efficiency to 95%, reduced computational overhead by 5%.</p>
+            <div class="jc-pills" aria-label="Technologies"><span class="jc-pill">Azure</span><span class="jc-pill">Computer Vision</span><span class="jc-pill">MLOps</span></div>
+          </article>
         </div>
-
-        <!-- Slot 8: empty (IIIT Delhi on left) -->
         <div class="journey-slot empty" data-slot="7"></div>
-
       </div>
     </div>
   </div>
 
-  <!-- FLAT VIEW — shown when filtering by type -->
-  <div class="journey-flat" id="journey-flat-view">
-    <!-- cards injected by JS -->
-  </div>
+  <div class="journey-flat" id="journey-flat-view" aria-label="Filtered timeline entries"></div>
 
   <div class="page-footer">
     <p>Ankush Gupta · PhD Incoming · He/They</p>
@@ -1023,106 +1011,83 @@ h1 {
 </div>
 
 <!-- ═══ RESEARCH ═══ -->
-<div id="page-research" class="page">
-  <div class="section-label">Publications</div>
+<div id="page-research" class="page" role="tabpanel" aria-labelledby="tab-research">
+  <div class="section-label" aria-hidden="true">Publications</div>
   <div class="page-header">
     <h2>Selected Research</h2>
-    <p>Published in A* venues. Filter by theme below. Full list on <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2)">Google Scholar ↗</a></p>
+    <p>Published in A* venues. Filter by theme below. Full list on <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2)" aria-label="Google Scholar profile (opens in new tab)">Google Scholar <span aria-hidden="true">↗</span></a></p>
+  </div>
+  <div class="research-meta" aria-live="polite" aria-atomic="true" id="research-meta-count">
+    <span class="research-meta-dot" aria-hidden="true"></span>
+    <span>Showing all publications</span>
   </div>
 
-  <div class="pub-tabs">
-    <button class="pub-tab active" onclick="filterPubs('all',this)">All</button>
-    <button class="pub-tab" onclick="filterPubs('foundations',this)">Foundational AI</button>
-    <button class="pub-tab" onclick="filterPubs('nlp',this)">NLP &amp; Society</button>
-    <button class="pub-tab" onclick="filterPubs('hci',this)">HCI</button>
+  <div class="pub-tabs" role="tablist" aria-label="Filter publications by topic">
+    <button class="pub-tab active" role="tab" aria-selected="true" onclick="filterPubs('all',this)">All</button>
+    <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('Core-AI',this)">Core AI</button>
+    <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('NLP',this)">NLP &amp; Society</button>
+    <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('HCAI',this)">HCI</button>
   </div>
 
-  <div class="pub-grid">
-    <div class="pub-card visible" data-category="foundations">
+  <div class="pub-grid" role="list" aria-label="Publications">
+
+    <article class="pub-card visible" data-category="Core-AI" role="listitem">
       <div class="pub-venue">NeurIPS 2025</div>
-      
-      <div class="pub-title">
-        FEEL: Quantifying Heterogeneity in Physiological Signals for Generalizable Emotion Recognition
-      </div>
-    
-      
-      <div class="pub-abstract">
-        A large-scale benchmarking framework for emotion recognition from physiological signals, unifying evaluation across 19 EDA and PPG datasets. FEEL benchmarks 16 architectures across traditional, deep, and self-supervised paradigms under both within- and cross-dataset settings, revealing strong generalization of contrastive signal-language pretraining and the continued robustness of feature-based models in low-resource environments.
-      </div>
-      
+      <h3 class="pub-title">FEEL: Quantifying Heterogeneity in Physiological Signals for Generalizable Emotion Recognition</h3>
+      <p class="pub-abstract">A large-scale benchmarking framework for emotion recognition from physiological signals, unifying evaluation across 19 EDA and PPG datasets. FEEL benchmarks 16 architectures across traditional, deep, and self-supervised paradigms under both within- and cross-dataset settings, revealing strong generalization of contrastive signal-language pretraining and the continued robustness of feature-based models in low-resource environments.</p>
       <div class="pub-links">
-        <a href="http://neurips.cc/virtual/2025/loc/san-diego/poster/121715" target="_blank" class="pub-link">NeurIPS 2025</a>
-        <a href="https://alchemy18.github.io/FEEL_Benchmark/" target="_blank" class="pub-link">Project Page</a>
+        <a href="http://neurips.cc/virtual/2025/loc/san-diego/poster/121715" target="_blank" class="pub-link" aria-label="View FEEL paper at NeurIPS 2025 (opens in new tab)">NeurIPS 2025</a>
+        <a href="https://alchemy18.github.io/FEEL_Benchmark/" target="_blank" class="pub-link" aria-label="FEEL project page (opens in new tab)">Project Page</a>
       </div>
-    </div>
-<div class="pub-card visible" data-category="foundations">
-  <div class="pub-venue">NeurIPS 2024</div>
-  
-  <div class="pub-title">
-    EEVR: A Dataset of Paired Physiological Signals and Textual Descriptions for Joint Emotion Representation Learning
-  </div>
-  
-  <div class="pub-abstract">
-    A multimodal dataset pairing EDA and PPG signals from 360° VR-based emotion elicitation with participant-level textual descriptions (37 subjects), enabling context-aware emotion recognition. Introduces contrastive language-signal pretraining (CLSP), improving performance and enabling strong zero-shot transfer across datasets.
-  </div>
-  
-  <div class="pub-links">
-    <a href="https://nips.cc/virtual/2024/poster/97493" target="_blank" class="pub-link">NeurIPS</a>
-    <a href="https://melangelabiiitd.github.io/EEVR/" target="_blank" class="pub-link">Project Page</a>
-  </div>
-</div>
-    <div class="pub-card visible" data-category="hci">
-  <div class="pub-venue">ACM IMWUT 2025 · UbiComp</div>
-  
-  <div class="pub-title">
-    AnnoSense: Navigating the Complexities of Collecting and Annotating Everyday Emotion Data for AI
-  </div>
-  
-  <div class="pub-abstract">
-    A stakeholder-informed framework for real-world emotion data collection, developed through studies with 119 participants including the public, clinicians, and AI researchers. Produces 15 actionable guidelines for reliable, usable, and ethically grounded emotion annotation, validated by domain experts.
-  </div>
-  
-  <div class="pub-links">
-    <a href="http://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="pub-link">ACM DL</a>
-    <a href="https://www.ubicomp.org/ubicomp-iswc-2025/program/" target="_blank" class="pub-link">UbiComp</a>
-  </div>
-</div>
-    <div class="pub-card visible" data-category="nlp">
-  <div class="pub-venue">Under Review</div>
-  
-  <div class="pub-title">
-    CITAR: Citation Inference using Taxonomy-Aligned Retrieval and Context-Aware Entity Matching
-  </div>
-  
-  <div class="pub-abstract">
-    A context-aware citation recommendation system that aligns hierarchical academic taxonomies to generate relevant citations with precise insertion points. Achieves strong retrieval performance (Recall@10 0.35, MRR 0.21) while improving exposure balance across the corpus, demonstrating effective trade-offs between relevance, efficiency, and fairness.
-  </div>
-  
-  <div class="pub-links">
-    <a href="#" class="pub-link" style="opacity:0.4;">Under Review</a>
-  </div>
-</div>
-    <div class="pub-card visible" data-category="foundations nlp">
-  <div class="pub-venue">Under Review</div>
-  
-  <div class="pub-title">
-    Toward Inclusive NLP: A Survey of LGBTQIA+ Representation and Gaps in Language Technologies
-  </div>
-  
-  <div class="pub-abstract">
-    A systematic survey of 86 NLP papers examining the relationship between language technologies and LGBTQIA+ communities. Identifies key gaps in proactive bias mitigation, intersectional representation, and non-English settings, highlighting opportunities for building more inclusive and equitable NLP systems.
-  </div>
-  
-  <div class="pub-links">
-    <a href="#" class="pub-link" style="opacity:0.4;">Under Review</a>
-  </div>
-</div>
-    <div class="pub-card visible" data-category="hci">
+    </article>
+
+    <article class="pub-card visible" data-category="Core-AI" role="listitem">
+      <div class="pub-venue">NeurIPS 2024</div>
+      <h3 class="pub-title">EEVR: A Dataset of Paired Physiological Signals and Textual Descriptions for Joint Emotion Representation Learning</h3>
+      <p class="pub-abstract">A multimodal dataset pairing EDA and PPG signals from 360° VR-based emotion elicitation with participant-level textual descriptions (37 subjects), enabling context-aware emotion recognition. Introduces contrastive language-signal pretraining (CLSP), improving performance and enabling strong zero-shot transfer across datasets.</p>
+      <div class="pub-links">
+        <a href="https://nips.cc/virtual/2024/poster/97493" target="_blank" class="pub-link" aria-label="View EEVR paper at NeurIPS 2024 (opens in new tab)">NeurIPS</a>
+        <a href="https://melangelabiiitd.github.io/EEVR/" target="_blank" class="pub-link" aria-label="EEVR project page (opens in new tab)">Project Page</a>
+      </div>
+    </article>
+
+    <article class="pub-card visible" data-category="HCAI" role="listitem">
+      <div class="pub-venue">ACM IMWUT 2025 · UbiComp</div>
+      <h3 class="pub-title">AnnoSense: Navigating the Complexities of Collecting and Annotating Everyday Emotion Data for AI</h3>
+      <p class="pub-abstract">A stakeholder-informed framework for real-world emotion data collection, developed through studies with 119 participants including the public, clinicians, and AI researchers. Produces 15 actionable guidelines for reliable, usable, and ethically grounded emotion annotation, validated by domain experts.</p>
+      <div class="pub-links">
+        <a href="http://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="pub-link" aria-label="View AnnoSense paper in ACM Digital Library (opens in new tab)">ACM DL</a>
+        <a href="https://www.ubicomp.org/ubicomp-iswc-2025/program/" target="_blank" class="pub-link" aria-label="UbiComp 2025 program (opens in new tab)">UbiComp</a>
+      </div>
+    </article>
+
+    <article class="pub-card visible" data-category="NLP" role="listitem">
+      <div class="pub-venue">Under Review</div>
+      <h3 class="pub-title">CITAR: Citation Inference using Taxonomy-Aligned Retrieval and Context-Aware Entity Matching</h3>
+      <p class="pub-abstract">A context-aware citation recommendation system that aligns hierarchical academic taxonomies to generate relevant citations with precise insertion points. Achieves strong retrieval performance (Recall@10 0.35, MRR 0.21) while improving exposure balance across the corpus, demonstrating effective trade-offs between relevance, efficiency, and fairness.</p>
+      <div class="pub-links">
+        <a href="#" class="pub-link" style="opacity:0.4;" aria-label="Under review, link unavailable" aria-disabled="true">Under Review</a>
+      </div>
+    </article>
+
+    <article class="pub-card visible" data-category="Core-AI NLP" role="listitem">
+      <div class="pub-venue">Under Review</div>
+      <h3 class="pub-title">Toward Inclusive NLP: A Survey of LGBTQIA+ Representation and Gaps in Language Technologies</h3>
+      <p class="pub-abstract">A systematic survey of 86 NLP papers examining the relationship between language technologies and LGBTQIA+ communities. Identifies key gaps in proactive bias mitigation, intersectional representation, and non-English settings, highlighting opportunities for building more inclusive and equitable NLP systems.</p>
+      <div class="pub-links">
+        <a href="#" class="pub-link" style="opacity:0.4;" aria-label="Under review, link unavailable" aria-disabled="true">Under Review</a>
+      </div>
+    </article>
+
+    <article class="pub-card visible" data-category="HCAI" role="listitem">
       <div class="pub-venue">ACM India HCI 2023 · Springer SCI</div>
-      <div class="pub-title">Jail Diaries: An Interactive Pop-Up Book Art Installation</div>
-      <div class="pub-abstract">Interactive learning experiences for children about the Indian freedom struggle, using visual projection mapping and gesture tracking. Published in Springer "Studies in Computational Intelligence."</div>
-      <div class="pub-links"><a href="https://link.springer.com/book/10.1007/978-981-97-4335-3" target="_blank" class="pub-link">Springer</a></div>
-    </div>
+      <h3 class="pub-title">Jail Diaries: An Interactive Pop-Up Book Art Installation</h3>
+      <p class="pub-abstract">Interactive learning experiences for children about the Indian freedom struggle, using visual projection mapping and gesture tracking. Published in Springer "Studies in Computational Intelligence."</p>
+      <div class="pub-links">
+        <a href="https://link.springer.com/book/10.1007/978-981-97-4335-3" target="_blank" class="pub-link" aria-label="View in Springer (opens in new tab)">Springer</a>
+      </div>
+    </article>
+
   </div>
 
   <div class="page-footer">
@@ -1132,48 +1097,51 @@ h1 {
 </div>
 
 <!-- ═══ BEYOND ═══ -->
-<div id="page-beyond" class="page">
-  <div class="section-label">Beyond Academia</div>
+<div id="page-beyond" class="page" role="tabpanel" aria-labelledby="tab-beyond">
+  <div class="section-label" aria-hidden="true">Beyond Academia</div>
   <div class="page-header">
     <h2>The Other Side</h2>
     <p>Research is only one part of who I am. Outside the lab, I explore ideas through writing, debate, and community.</p>
   </div>
-  <div class="beyond-grid">
-    <div class="beyond-card clickable" onclick="openCreative()">
-      <div class="beyond-icon">✍️</div>
-      <div class="beyond-title">Poetry &amp; Writing</div>
-      <div class="beyond-desc">I write poetry as a way of thinking and exlporing about identity, belonging, and the quiet tensions of society. Click to read.</div>
+  <div class="beyond-grid" role="list">
+
+    <div class="beyond-card clickable" role="listitem" onclick="openCreative()" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openCreative()" aria-label="Poetry and Writing — click to read poems">
+      <div class="beyond-icon" aria-hidden="true">✍️</div>
+      <h3 class="beyond-title">Poetry &amp; Writing</h3>
+      <p class="beyond-desc">I write poetry as a way of thinking and exploring about identity, belonging, and the quiet tensions of society. Click to read.</p>
     </div>
-    <div class="beyond-card clickable" onclick="window.open('https://www.instagram.com/lda.iiitd/','_blank')">
-      <div class="beyond-icon">🎙️</div>
-      <div class="beyond-title">Debating</div>
-      <div class="beyond-desc">Competitive debating sharpened how I think about arguments, evidence, and persuasion, gives safe space for putting up my political views.</div>
+
+    <div class="beyond-card clickable" role="listitem" onclick="window.open('https://www.instagram.com/lda.iiitd/','_blank')" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')window.open('https://www.instagram.com/lda.iiitd/','_blank')" aria-label="Debating — view IIIT Delhi debate society on Instagram (opens in new tab)">
+      <div class="beyond-icon" aria-hidden="true">🎙️</div>
+      <h3 class="beyond-title">Debating</h3>
+      <p class="beyond-desc">Competitive debating sharpened how I think about arguments, evidence, and persuasion, gives safe space for putting up my political views.</p>
     </div>
-    <div class="beyond-card clickable" onclick="window.open('https://www.goodreads.com/book/show/59344312-verity','_blank')">
-  <div class="beyond-icon">📚</div>
-  <div class="beyond-title">Reading</div>
-  <div class="beyond-desc">
-    Mostly rom-com novels these days, with a soft spot for queer stories — light, funny, and easy to keep returning to.
-  </div>
-  <div class="beyond-sub">Currently reading — click to view</div>
-</div>
-   <div class="beyond-card clickable" onclick="window.open('https://studentsenate.iiitd.edu.in/','_blank')">
-  <div class="beyond-icon">🏛️</div>
-  <div class="beyond-title">Student Governance</div>
-  <div class="beyond-desc">
-    Student Senate member at IIIT Delhi, contributed to institutional policy and student representation, while mentoring junior students and supporting their academic journey.
-  </div>
-</div>
-    <div class="beyond-card clickable" onclick="window.open('https://aclanthology.org/2025.queerinai-main.pdf','_blank')">
-      <div class="beyond-icon">🏳️‍🌈</div>
-      <div class="beyond-title">Queer in AI</div>
-      <div class="beyond-desc">Active Core organizer and NAACL 2025 Workshop Chair at Queer in AI, building community and supporting visibility for LGBTQ+ researchers in AI/ML.</div>
+
+    <div class="beyond-card clickable" role="listitem" onclick="window.open('https://www.goodreads.com/book/show/59344312-verity','_blank')" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')window.open('https://www.goodreads.com/book/show/59344312-verity','_blank')" aria-label="Reading — currently reading Verity on Goodreads (opens in new tab)">
+      <div class="beyond-icon" aria-hidden="true">📚</div>
+      <h3 class="beyond-title">Reading</h3>
+      <p class="beyond-desc">Mostly rom-com novels these days, with a soft spot for queer stories — light, funny, and easy to keep returning to.</p>
+      <div class="beyond-sub" style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;font-family:'DM Mono',monospace;">Currently reading — click to view</div>
     </div>
-    <div class="beyond-card">
-      <div class="beyond-icon">🎓</div>
-      <div class="beyond-title">Teaching</div>
-      <div class="beyond-desc">TA'd four courses including Human-Centered AI and Interactive Systems. Good teaching is good research communication — both require knowing what your audience actually needs.</div>
+
+    <div class="beyond-card clickable" role="listitem" onclick="window.open('https://studentsenate.iiitd.edu.in/','_blank')" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')window.open('https://studentsenate.iiitd.edu.in/','_blank')" aria-label="Student Governance — IIIT Delhi Student Senate website (opens in new tab)">
+      <div class="beyond-icon" aria-hidden="true">🏛️</div>
+      <h3 class="beyond-title">Student Governance</h3>
+      <p class="beyond-desc">Student Senate member at IIIT Delhi, contributed to institutional policy and student representation, while mentoring junior students and supporting their academic journey.</p>
     </div>
+
+    <div class="beyond-card clickable" role="listitem" onclick="window.open('https://aclanthology.org/2025.queerinai-main.pdf','_blank')" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')window.open('https://aclanthology.org/2025.queerinai-main.pdf','_blank')" aria-label="Queer in AI — view NAACL 2025 workshop proceedings (opens in new tab)">
+      <div class="beyond-icon" aria-hidden="true">🏳️‍🌈</div>
+      <h3 class="beyond-title">Queer in AI</h3>
+      <p class="beyond-desc">Active Core organizer and NAACL 2025 Workshop Chair at Queer in AI, building community and supporting visibility for LGBTQ+ researchers in AI/ML.</p>
+    </div>
+
+    <div class="beyond-card" role="listitem" tabindex="0">
+      <div class="beyond-icon" aria-hidden="true">🎓</div>
+      <h3 class="beyond-title">Teaching</h3>
+      <p class="beyond-desc">TA'd four courses including Human-Centered AI and Interactive Systems. Good teaching is good research communication — both require knowing what your audience actually needs.</p>
+    </div>
+
   </div>
 
   <div class="page-footer">
@@ -1182,21 +1150,18 @@ h1 {
   </div>
 </div>
 
-<!-- ═══ POETRY MODAL — TILE GALLERY ═══ -->
-<div class="creative-overlay" id="creative-overlay" onclick="closeCreativeIfBg(event)">
+<!-- ═══ POETRY MODAL ═══ -->
+<div class="creative-overlay" id="creative-overlay"
+     role="dialog" aria-modal="true" aria-labelledby="modal-title"
+     onclick="closeCreativeIfBg(event)">
   <div class="creative-modal" id="creative-modal">
-    <button class="creative-modal-close" onclick="closeCreative()">✕</button>
+    <button class="creative-modal-close" onclick="closeCreative()" aria-label="Close poetry modal">✕</button>
 
-    <!-- Header -->
     <div class="modal-header">
-      <div class="creative-eyebrow">Creative Corner · Poetry &amp; Writing</div>
-      <h3>The Creative Corner</h3>
-      <p class="modal-sub">
-        Poems, essays, reflections, and more. Click a tile to explore.
-      </p>
-
-      <!-- Tag filters -->
-      <div class="poetry-tags" id="poetry-tags">
+      <div class="creative-eyebrow" aria-hidden="true">Creative Corner · Poetry &amp; Writing</div>
+      <h2 id="modal-title" class="creative-modal" style="font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:0.5rem;">The Creative Corner</h2>
+      <p class="modal-sub">Poems, essays, reflections, and more. Click a tile to explore.</p>
+      <div class="poetry-tags" role="group" aria-label="Filter poems by tag">
         <button class="poetry-tag active" onclick="filterPoems('all',this)">all</button>
         <button class="poetry-tag" onclick="filterPoems('poetry',this)">poetry</button>
         <button class="poetry-tag" onclick="filterPoems('reflection',this)">reflection</button>
@@ -1208,11 +1173,10 @@ h1 {
       </div>
     </div>
 
-    <!-- Tile grid -->
-    <div class="poetry-tiles" id="poetry-tiles">
+    <div class="poetry-tiles" id="poetry-tiles" role="list">
 
-      <!-- Tile 1 -->
-      <div class="poetry-tile" data-tags="poetry hindi reflection love growth"
+      <div class="poetry-tile" role="listitem" tabindex="0"
+           data-tags="poetry hindi reflection love growth"
            data-kind="poem" data-title="राख से आगे?"
            data-meta="— Creative Corner"
            data-body="चिंगारी कब आग बनी, पता न चला
@@ -1254,20 +1218,21 @@ h1 {
 धुआँ सा होकर, कहीं दूर चल दिया
 
 अधजली कलियाँ से एक नया घर बन गया"
-           onclick="openPoem(this)">
+           onclick="openPoem(this)" onkeydown="if(event.key==='Enter'||event.key===' ')openPoem(this)"
+           aria-label="Read poem: राख से आगे?">
         <div>
-          <div class="tile-kind">poem</div>
+          <div class="tile-kind" aria-hidden="true">poem</div>
           <div class="tile-title">राख से आगे?</div>
           <div class="tile-preview">चिंगारी कब आग बनी, पता न चला…</div>
         </div>
-        <div class="tile-meta">
-          <span class="tile-tag">hindi</span><span class="tile-tag">love</span><span class="tile-tag">growth</span>
+        <div class="tile-meta" aria-label="Tags: hindi, love, growth">
+          <span class="tile-tag" aria-hidden="true">hindi</span><span class="tile-tag" aria-hidden="true">love</span><span class="tile-tag" aria-hidden="true">growth</span>
         </div>
-        <div class="tile-bg-letter">र</div>
+        <div class="tile-bg-letter" aria-hidden="true">र</div>
       </div>
 
-      <!-- Tile 2 -->
-      <div class="poetry-tile" data-tags="poetry hindi reflection love"
+      <div class="poetry-tile" role="listitem" tabindex="0"
+           data-tags="poetry hindi reflection love"
            data-kind="poem" data-title="पहला प्यार"
            data-meta="— Creative Corner"
            data-body="पहला प्यार किया तुमसे
@@ -1309,20 +1274,21 @@ h1 {
 यूँ तो उन्हें बहती हवा हो जाना है
 
 क्या पता तुझ में मिलकर अर्थ बनाना है"
-           onclick="openPoem(this)">
+           onclick="openPoem(this)" onkeydown="if(event.key==='Enter'||event.key===' ')openPoem(this)"
+           aria-label="Read poem: पहला प्यार">
         <div>
-          <div class="tile-kind">poem</div>
+          <div class="tile-kind" aria-hidden="true">poem</div>
           <div class="tile-title">पहला प्यार</div>
           <div class="tile-preview">पहला प्यार किया तुमसे…</div>
         </div>
-        <div class="tile-meta">
-          <span class="tile-tag">hindi</span><span class="tile-tag">love</span><span class="tile-tag">reflection</span>
+        <div class="tile-meta" aria-label="Tags: hindi, love, reflection">
+          <span class="tile-tag" aria-hidden="true">hindi</span><span class="tile-tag" aria-hidden="true">love</span><span class="tile-tag" aria-hidden="true">reflection</span>
         </div>
-        <div class="tile-bg-letter">प</div>
+        <div class="tile-bg-letter" aria-hidden="true">प</div>
       </div>
 
-      <!-- Tile 3 -->
-      <div class="poetry-tile" data-tags="poetry hindi society reflection"
+      <div class="poetry-tile" role="listitem" tabindex="0"
+           data-tags="poetry hindi society reflection"
            data-kind="poem" data-title="कृष्णा"
            data-meta="— Creative Corner"
            data-body="सुखों की आहुति से जन्मी,
@@ -1388,20 +1354,21 @@ h1 {
 आज भी खड़ी है द्रौपदी निर्भीक,
 
 सब हैं खामोश, ना जाने क्यों हैं सब मूक।"
-           onclick="openPoem(this)">
+           onclick="openPoem(this)" onkeydown="if(event.key==='Enter'||event.key===' ')openPoem(this)"
+           aria-label="Read poem: कृष्णा">
         <div>
-          <div class="tile-kind">poem</div>
+          <div class="tile-kind" aria-hidden="true">poem</div>
           <div class="tile-title">कृष्णा</div>
           <div class="tile-preview">सुखों की आहुति से जन्मी…</div>
         </div>
-        <div class="tile-meta">
-          <span class="tile-tag">hindi</span><span class="tile-tag">society</span><span class="tile-tag">reflection</span>
+        <div class="tile-meta" aria-label="Tags: hindi, society, reflection">
+          <span class="tile-tag" aria-hidden="true">hindi</span><span class="tile-tag" aria-hidden="true">society</span><span class="tile-tag" aria-hidden="true">reflection</span>
         </div>
-        <div class="tile-bg-letter">क</div>
+        <div class="tile-bg-letter" aria-hidden="true">क</div>
       </div>
 
-      <!-- Tile 4 -->
-      <div class="poetry-tile" data-tags="poetry hindi reflection growth self-discovery"
+      <div class="poetry-tile" role="listitem" tabindex="0"
+           data-tags="poetry hindi reflection growth self-discovery"
            data-kind="poem" data-title="सीख"
            data-meta="— Creative Corner"
            data-body="सीख, क्या है सीख
@@ -1451,113 +1418,122 @@ h1 {
 पता नहीं कब ख़त्म हुई यह यात्रा
 
 जीवन में नए रंग भरेगी"
-           onclick="openPoem(this)">
+           onclick="openPoem(this)" onkeydown="if(event.key==='Enter'||event.key===' ')openPoem(this)"
+           aria-label="Read poem: सीख">
         <div>
-          <div class="tile-kind">poem</div>
+          <div class="tile-kind" aria-hidden="true">poem</div>
           <div class="tile-title">सीख</div>
           <div class="tile-preview">सीख, क्या है सीख…</div>
         </div>
-        <div class="tile-meta">
-          <span class="tile-tag">reflection</span><span class="tile-tag">growth</span><span class="tile-tag">self-discovery</span>
+        <div class="tile-meta" aria-label="Tags: reflection, growth, self-discovery">
+          <span class="tile-tag" aria-hidden="true">reflection</span><span class="tile-tag" aria-hidden="true">growth</span><span class="tile-tag" aria-hidden="true">self-discovery</span>
         </div>
-        <div class="tile-bg-letter">स</div>
+        <div class="tile-bg-letter" aria-hidden="true">स</div>
       </div>
 
-      <!-- Tile 5 — YouTube -->
-      <div class="poetry-tile" data-tags="video funny"
+      <div class="poetry-tile external" role="listitem" tabindex="0"
+           data-tags="video funny"
            data-kind="video" data-title="Podcast Interview"
-           onclick="window.open('https://www.youtube.com/watch?v=KC_F7I3WfHc&t=1s','_blank')">
+           onclick="window.open('https://www.youtube.com/watch?v=KC_F7I3WfHc&t=1s','_blank')"
+           onkeydown="if(event.key==='Enter'||event.key===' ')window.open('https://www.youtube.com/watch?v=KC_F7I3WfHc&t=1s','_blank')"
+           aria-label="Podcast Interview — watch on YouTube (opens in new tab)">
         <div>
-          <div class="tile-kind">scripts / interview</div>
+          <div class="tile-kind" aria-hidden="true">scripts / interview</div>
           <div class="tile-title">Podcast Interview</div>
-          <div class="tile-preview">Watch on YouTube →</div>
+          <div class="tile-preview">Watch on YouTube</div>
         </div>
-        <div class="tile-meta">
-          <span class="tile-tag">video</span><span class="tile-tag">podcast</span>
+        <div class="tile-meta" aria-label="Tags: video, podcast">
+          <span class="tile-tag" aria-hidden="true">video</span><span class="tile-tag" aria-hidden="true">podcast</span>
         </div>
-        <div class="tile-bg-letter">▶</div>
+        <div class="tile-bg-letter" aria-hidden="true">▶</div>
       </div>
 
-      <!-- Tile 6 — YourDost Blog -->
-      <div class="poetry-tile" data-tags="reflection queer growth self-discovery"
+      <div class="poetry-tile external" role="listitem" tabindex="0"
+           data-tags="reflection queer growth self-discovery"
            data-kind="blog" data-title="Ankush's Story"
-           onclick="window.open('https://yourdost.com/blog/2025/05/ankushs-story-of-discovering-his-inner-identity-through-therapy.html','_blank')">
+           onclick="window.open('https://yourdost.com/blog/2025/05/ankushs-story-of-discovering-his-inner-identity-through-therapy.html','_blank')"
+           onkeydown="if(event.key==='Enter'||event.key===' ')window.open('https://yourdost.com/blog/2025/05/ankushs-story-of-discovering-his-inner-identity-through-therapy.html','_blank')"
+           aria-label="Ankush's Story — blog post about discovering inner identity through therapy on YourDost (opens in new tab)">
         <div>
-          <div class="tile-kind">blog · mental health</div>
+          <div class="tile-kind" aria-hidden="true">blog · mental health</div>
           <div class="tile-title">Ankush's Story</div>
-          <div class="tile-preview">Discovering inner identity through therapy →</div>
+          <div class="tile-preview">Discovering inner identity through therapy</div>
         </div>
-        <div class="tile-meta">
-          <span class="tile-tag">queer</span><span class="tile-tag">growth</span><span class="tile-tag">mental health</span>
+        <div class="tile-meta" aria-label="Tags: queer, growth, mental health">
+          <span class="tile-tag" aria-hidden="true">queer</span><span class="tile-tag" aria-hidden="true">growth</span><span class="tile-tag" aria-hidden="true">mental health</span>
         </div>
-        <div class="tile-bg-letter">✦</div>
+        <div class="tile-bg-letter" aria-hidden="true">✦</div>
       </div>
 
     </div>
 
-    <!-- Inline poem reader -->
-    <div class="poem-reader" id="poem-reader">
-      <button class="poem-reader-close" onclick="closePoem()">← back to tiles</button>
+    <div class="poem-reader" id="poem-reader" role="region" aria-label="Poem reader" aria-live="polite">
+      <button class="poem-reader-close" onclick="closePoem()" aria-label="Close poem reader and return to tiles">← back to tiles</button>
       <div class="poem-reader-title" id="reader-title"></div>
       <div class="poem-reader-meta" id="reader-meta"></div>
-      <div class="poem-reader-body" id="reader-body"></div>
+      <div class="poem-reader-body" id="reader-body" lang="hi"></div>
     </div>
 
   </div>
 </div>
 
 <!-- ═══ UPDATES ═══ -->
-<div id="page-updates" class="page">
-  <div class="section-label">Updates</div>
+<div id="page-updates" class="page" role="tabpanel" aria-labelledby="tab-updates">
+  <div class="section-label" aria-hidden="true">Updates</div>
   <div class="page-header">
     <h2>News &amp; Activity</h2>
-    <p>Recent highlights and announcements. <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" style="color:var(--accent2)">Follow on LinkedIn ↗</a> for the full feed.</p>
+    <p>Recent highlights and announcements. <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" style="color:var(--accent2)" aria-label="Follow on LinkedIn (opens in new tab)">Follow on LinkedIn <span aria-hidden="true">↗</span></a> for the full feed.</p>
   </div>
 
-  <div class="updates-filter">
-    <button class="updates-tag active" onclick="filterUpdates('all',this)">All</button>
-    <button class="updates-tag" onclick="filterUpdates('conference',this)">Conference</button>
-    <button class="updates-tag" onclick="filterUpdates('education',this)">Education</button>
-    <button class="updates-tag" onclick="filterUpdates('visiting',this)">Visiting / Lecture</button>
+  <div class="updates-filter" role="group" aria-label="Filter news by category">
+    <button class="updates-tag active" aria-pressed="true" onclick="filterUpdates('all',this)">All</button>
+    <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('conference',this)">Conference</button>
+    <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('education',this)">Education</button>
+    <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('visiting',this)">Visiting / Lecture</button>
   </div>
 
-  <div class="news-grid" id="news-grid">
-    <div class="news-card" data-update-type="education">
-      <div class="news-card-header"><span class="news-venue">2025</span><span class="news-badge badge-education">Education</span></div>
-      <div class="news-title">Joining PhD in Computer Science at Purdue University</div>
-      <div class="news-excerpt">Excited to begin my PhD journey under Dr. Aniket Bera at the IDEAS Lab, focused on multimodal foundational models.</div>
-      <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="news-source">→ LinkedIn Post</a>
-    </div>
-    <div class="news-card" data-update-type="conference">
-      <div class="news-card-header"><span class="news-venue">NeurIPS 2025</span><span class="news-badge badge-conference">Conference</span></div>
-      <div class="news-title">FEEL Paper Accepted at NeurIPS 2025</div>
-      <div class="news-excerpt">Our benchmarking framework for physiological signal emotion recognition across 19 datasets was accepted at NeurIPS 2025 Datasets &amp; Benchmarks track.</div>
-      <a href="https://openreview.net/forum?id=JxuFBB5OpD" target="_blank" class="news-source">→ Paper Link</a>
-    </div>
-    <div class="news-card" data-update-type="conference">
-      <div class="news-card-header"><span class="news-venue">NAACL 2025</span><span class="news-badge badge-conference">Conference</span></div>
-      <div class="news-title">Workshop Chair at Queer in AI @ NAACL 2025</div>
-      <div class="news-excerpt">Served as archival workshop chair for the Queer in AI workshop at NAACL 2025 — organizing a space for LGBTQ+ researchers to present and connect.</div>
-      <a href="https://aclanthology.org/2025.queerinai-main.pdf" target="_blank" class="news-source">→ Proceedings</a>
-    </div>
-    <div class="news-card" data-update-type="conference">
-      <div class="news-card-header"><span class="news-venue">ACM IMWUT 2025</span><span class="news-badge badge-conference">Conference</span></div>
-      <div class="news-title">AnnoSense Accepted at ACM IMWUT / UbiComp 2025</div>
-      <div class="news-excerpt">Our framework for ethical emotion data annotation accepted at ACM IMWUT 2025, to be presented at UbiComp/ISWC 2025.</div>
-      <a href="https://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="news-source">→ Paper Link</a>
-    </div>
-    <div class="news-card" data-update-type="visiting">
-      <div class="news-card-header"><span class="news-venue">2024</span><span class="news-badge badge-visiting">Visiting / Lecture</span></div>
-      <div class="news-title">Invited to Google DeepMind Research Symposium</div>
-      <div class="news-excerpt">Selected as an invited attendee at the Google DeepMind Research Symposium 2024.</div>
-      <a href="https://www.linkedin.com/posts/ankush-gupta-9a9211224_neurips-2024-gdm-symposium-2025-activity-7292953681753255936-eJ4o?utm_source=share&utm_medium=member_desktop&rcm=ACoAADhFtVEBYsHnsB8nDJ94JvPv6GWK4aLCv98" target="_blank" class="news-source">→ LinkedIn Post</a>
-    </div>
-    <div class="news-card" data-update-type="conference">
-      <div class="news-card-header"><span class="news-venue">NeurIPS 2024</span><span class="news-badge badge-conference">Conference</span></div>
-      <div class="news-title">EEVR Paper Accepted at NeurIPS 2024</div>
-      <div class="news-excerpt">Our VR-based physiological emotion dataset with contrastive language-signal pretraining accepted at NeurIPS 2024.</div>
-      <a href="https://neurips.cc/virtual/2024/poster/97493" target="_blank" class="news-source">→ NeurIPS 2024</a>
-    </div>
+  <div class="news-grid" id="news-grid" role="list" aria-label="News items">
+    <article class="news-card" data-update-type="education" role="listitem">
+      <div class="news-card-header"><span class="news-venue">2025</span><span class="news-badge badge-education">Education<span class="sr-only"> category</span></span></div>
+      <h3 class="news-title">Joining PhD in Computer Science at Purdue University</h3>
+      <p class="news-excerpt">Excited to begin my PhD journey under Dr. Aniket Bera at the IDEAS Lab, focused on multimodal foundational models.</p>
+      <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="news-source" aria-label="LinkedIn post about PhD at Purdue (opens in new tab)">→ LinkedIn Post</a>
+    </article>
+
+    <article class="news-card" data-update-type="conference" role="listitem">
+      <div class="news-card-header"><span class="news-venue">NeurIPS 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
+      <h3 class="news-title">FEEL Paper Accepted at NeurIPS 2025</h3>
+      <p class="news-excerpt">Our benchmarking framework for physiological signal emotion recognition across 19 datasets was accepted at NeurIPS 2025 Datasets &amp; Benchmarks track.</p>
+      <a href="https://openreview.net/forum?id=JxuFBB5OpD" target="_blank" class="news-source" aria-label="FEEL paper on OpenReview (opens in new tab)">→ Paper Link</a>
+    </article>
+
+    <article class="news-card" data-update-type="conference" role="listitem">
+      <div class="news-card-header"><span class="news-venue">NAACL 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
+      <h3 class="news-title">Workshop Chair at Queer in AI @ NAACL 2025</h3>
+      <p class="news-excerpt">Served as archival workshop chair for the Queer in AI workshop at NAACL 2025 — organizing a space for LGBTQ+ researchers to present and connect.</p>
+      <a href="https://aclanthology.org/2025.queerinai-main.pdf" target="_blank" class="news-source" aria-label="Queer in AI workshop proceedings (opens in new tab)">→ Proceedings</a>
+    </article>
+
+    <article class="news-card" data-update-type="conference" role="listitem">
+      <div class="news-card-header"><span class="news-venue">ACM IMWUT 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
+      <h3 class="news-title">AnnoSense Accepted at ACM IMWUT / UbiComp 2025</h3>
+      <p class="news-excerpt">Our framework for ethical emotion data annotation accepted at ACM IMWUT 2025, to be presented at UbiComp/ISWC 2025.</p>
+      <a href="https://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="news-source" aria-label="AnnoSense paper in ACM Digital Library (opens in new tab)">→ Paper Link</a>
+    </article>
+
+    <article class="news-card" data-update-type="visiting" role="listitem">
+      <div class="news-card-header"><span class="news-venue">2024</span><span class="news-badge badge-visiting">Visiting / Lecture<span class="sr-only"> category</span></span></div>
+      <h3 class="news-title">Invited to Google DeepMind Research Symposium</h3>
+      <p class="news-excerpt">Selected as an invited attendee at the Google DeepMind Research Symposium 2024.</p>
+      <a href="https://www.linkedin.com/posts/ankush-gupta-9a9211224_neurips-2024-gdm-symposium-2025-activity-7292953681753255936-eJ4o" target="_blank" class="news-source" aria-label="LinkedIn post about Google DeepMind Symposium (opens in new tab)">→ LinkedIn Post</a>
+    </article>
+
+    <article class="news-card" data-update-type="conference" role="listitem">
+      <div class="news-card-header"><span class="news-venue">NeurIPS 2024</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
+      <h3 class="news-title">EEVR Paper Accepted at NeurIPS 2024</h3>
+      <p class="news-excerpt">Our VR-based physiological emotion dataset with contrastive language-signal pretraining accepted at NeurIPS 2024.</p>
+      <a href="https://neurips.cc/virtual/2024/poster/97493" target="_blank" class="news-source" aria-label="EEVR paper at NeurIPS 2024 (opens in new tab)">→ NeurIPS 2024</a>
+    </article>
   </div>
 
   <div class="page-footer">
@@ -1567,38 +1543,38 @@ h1 {
 </div>
 
 <!-- ═══ CONTACT ═══ -->
-<div id="page-contact" class="page">
+<div id="page-contact" class="page" role="tabpanel" aria-labelledby="tab-contact">
   <div class="contact-text" style="padding:0;">
-    <div class="section-label">Contact</div>
+    <div class="section-label" aria-hidden="true">Contact</div>
     <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,3vw,2.6rem);font-weight:700;line-height:1.1;margin-bottom:1.5rem;">Let's Connect</h2>
     <p>I'm actively looking for <strong>research collaborations</strong> and <strong>industrial internship opportunities</strong> (summer 2027), particularly at the intersection of multimodal AI and applied machine learning.</p>
     <p>Whether you're a researcher interested in joint work on foundational models, or an industry team looking for a collaborative PhD intern, I'd love to hear from you.</p>
-    <p>For academic inquiries, reviews, or just to talk about ideas or collabrations, feel free to reach out.</p>
-    <div class="contact-map-wrap" style="margin-top:2rem;">
-      <div class="contact-map-label">📍 West Lafayette, Indiana — Purdue University</div>
-      <div id="contact-map"></div>
+    <p>For academic inquiries, reviews, or just to talk about ideas or collaborations, feel free to reach out.</p>
+    <div class="contact-map-wrap" style="margin-top:2rem;" aria-label="Map showing location at Purdue University, West Lafayette, Indiana">
+      <div class="contact-map-label" aria-hidden="true"><span aria-hidden="true">📍</span> West Lafayette, Indiana — Purdue University</div>
+      <div id="contact-map" role="img" aria-label="Interactive map centered on Purdue University, West Lafayette, Indiana"></div>
     </div>
   </div>
 
-  <div class="contact-info" style="padding:2rem 0 0;">
-    <a href="mailto:ankushg0405@gmail.com" class="contact-item">
-      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8h18v12a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/></svg></span>
+  <div class="contact-info" role="list" aria-label="Contact methods" style="padding:2rem 0 0;">
+    <a href="mailto:ankushg0405@gmail.com" class="contact-item" role="listitem">
+      <span class="contact-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8h18v12a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/></svg></span>
       <div><span class="contact-item-label">Email</span><span class="contact-item-value">ankushg0405@gmail.com</span></div>
     </a>
-    <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="contact-item">
-      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></span>
+    <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="contact-item" aria-label="LinkedIn profile (opens in new tab)" role="listitem">
+      <span class="contact-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></span>
       <div><span class="contact-item-label">LinkedIn</span><span class="contact-item-value">ankush-gupta-9a9211224</span></div>
     </a>
-    <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" class="contact-item">
-      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 100 14 7 7 0 000-14z"/></svg></span>
+    <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" class="contact-item" aria-label="Google Scholar publications (opens in new tab)" role="listitem">
+      <span class="contact-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 100 14 7 7 0 000-14z"/></svg></span>
       <div><span class="contact-item-label">Google Scholar</span><span class="contact-item-value">View Publications</span></div>
     </a>
-    <a href="https://github.com/Ankush-Gupta04" target="_blank" class="contact-item">
-      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>
+    <a href="https://github.com/Ankush-Gupta04" target="_blank" class="contact-item" aria-label="GitHub profile (opens in new tab)" role="listitem">
+      <span class="contact-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>
       <div><span class="contact-item-label">GitHub</span><span class="contact-item-value">Ankush-Gupta04</span></div>
     </a>
-    <a href="https://drive.google.com/file/d/1CEiT-ZJarq0FspMWjh4azyNx75rTmXhU/view" target="_blank" class="contact-item">
-      <span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+    <a href="https://drive.google.com/file/d/1CEiT-ZJarq0FspMWjh4azyNx75rTmXhU/view" target="_blank" class="contact-item" aria-label="Download CV PDF (opens in new tab)" role="listitem">
+      <span class="contact-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
       <div><span class="contact-item-label">Curriculum Vitae</span><span class="contact-item-value">Download CV (PDF)</span></div>
     </a>
     <div class="page-footer" style="border:none;padding:1rem 0 0;margin-top:0.5rem;">
@@ -1607,29 +1583,78 @@ h1 {
   </div>
 </div>
 
+</main><!-- end #main-content -->
+
 <script>
+/* ═══════════════════════════════════════════
+   DEEP LINKS — Hash-based routing
+═══════════════════════════════════════════ */
+const VALID_PAGES = ['about','journey','research','beyond','updates','contact'];
+
+/* On load: read hash, navigate to correct page */
+window.addEventListener('load', () => {
+  const hash = window.location.hash.replace('#','').toLowerCase();
+  if (hash && VALID_PAGES.includes(hash)) {
+    showPage(hash, false); // false = don't push state (already in URL)
+  } else {
+    // Set initial state for back/forward to work from About
+    history.replaceState({ page: 'about' }, '', '#about');
+  }
+  // Road nodes on journey if active
+  if (document.getElementById('page-journey').classList.contains('active')) {
+    setTimeout(positionRoadNodes, 200);
+  }
+  // About init animation
+  document.querySelectorAll('#page-about .info-block').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(12px)';
+    el.style.transition = `opacity 0.4s ${i*0.08}s ease, transform 0.4s ${i*0.08}s ease`;
+    setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, 200 + i * 80);
+  });
+});
+
+/* Handle browser back/forward */
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.page) showPage(e.state.page, false);
+});
+
 /* ═══ THEME ═══ */
 function toggleTheme() {
   const html = document.documentElement;
   const btn = document.getElementById('theme-btn');
-  if (html.getAttribute('data-theme') === 'dark') {
-    html.setAttribute('data-theme', 'light');
-    btn.textContent = '🌙';
-  } else {
-    html.setAttribute('data-theme', 'dark');
-    btn.textContent = '☀️';
-  }
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  btn.querySelector('span').textContent = isDark ? '🌙' : '☀️';
+  btn.setAttribute('aria-label', isDark ? 'Switch to dark colour scheme' : 'Switch to light colour scheme');
   if (window._contactMap) window._contactMap.invalidateSize();
 }
 
 /* ═══ PAGES ═══ */
-function showPage(id) {
+function showPage(id, pushState = true) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active','fade-in'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.remove('active');
+    t.removeAttribute('aria-current');
+  });
+
   const page = document.getElementById('page-' + id);
   page.classList.add('active', 'fade-in');
+
   const tab = document.querySelector('[data-page="' + id + '"]');
-  if (tab) tab.classList.add('active');
+  if (tab) {
+    tab.classList.add('active');
+    tab.setAttribute('aria-current', 'page');
+  }
+
+  // Update URL hash (deep link)
+  if (pushState) {
+    history.pushState({ page: id }, '', '#' + id);
+  }
+
+  // Update document title
+  const titles = { about:'Ankush Gupta', journey:'Journey · Ankush Gupta', research:'Research · Ankush Gupta', beyond:'Beyond · Ankush Gupta', updates:'Updates · Ankush Gupta', contact:'Contact · Ankush Gupta' };
+  document.title = titles[id] || 'Ankush Gupta';
+
   window.scrollTo(0, 0);
   setTimeout(() => animatePage(id), 50);
   if (id === 'contact') setTimeout(initMap, 100);
@@ -1665,6 +1690,18 @@ function animatePage(id) {
       setTimeout(() => el.classList.add('revealed'), i * 80);
     });
   }
+  if (id === 'research') {
+    document.querySelectorAll('#page-research .pub-card.visible').forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(12px)';
+      void el.offsetWidth;
+      setTimeout(() => {
+        el.style.transition = `opacity 0.4s ease, transform 0.4s ease`;
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, i * 100);
+    });
+  }
 }
 
 /* ═══ ROAD NODE POSITIONING ═══ */
@@ -1672,34 +1709,28 @@ function positionRoadNodes() {
   const track = document.getElementById('road-track');
   if (!track) return;
   track.innerHTML = '';
-
-  const slots = document.querySelectorAll('#road-wrap .journey-slot');
   const trackRect = track.getBoundingClientRect();
-  const wrapRect = document.getElementById('road-wrap').getBoundingClientRect();
-
   const nodeConfigs = [
-    { type: 'upcoming', emoji: '🎓' },
-    { type: 'industry',  emoji: '💳' },
-    { type: 'research',  emoji: '🧠' },
-    { type: 'research',  emoji: '📚' },
-    { type: 'industry',  emoji: '⚡' },
-    { type: 'research',  emoji: '🎮' },
-    { type: 'industry',  emoji: '☁️' },
-    { type: 'education', emoji: '🏛️' },
+    { type: 'upcoming', emoji: '🎓', label: 'PhD upcoming' },
+    { type: 'industry',  emoji: '💳', label: 'Fintech' },
+    { type: 'research',  emoji: '🧠', label: 'HCAI Research' },
+    { type: 'research',  emoji: '📚', label: 'Data Science Lab' },
+    { type: 'industry',  emoji: '⚡', label: 'EON 2024' },
+    { type: 'research',  emoji: '🎮', label: 'HCI Research' },
+    { type: 'industry',  emoji: '☁️', label: 'EON 2023' },
+    { type: 'education', emoji: '🏛️', label: 'IIIT Delhi' },
   ];
-
   const leftSlots = document.querySelectorAll('#left-col .journey-slot');
-
   leftSlots.forEach((slot, i) => {
     if (i >= nodeConfigs.length) return;
     const slotRect = slot.getBoundingClientRect();
     const midY = slotRect.top + slotRect.height / 2 - trackRect.top;
     if (midY < 0 || midY > trackRect.height) return;
-
     const node = document.createElement('div');
     node.className = `road-node ${nodeConfigs[i].type}`;
     node.style.top = midY + 'px';
     node.textContent = nodeConfigs[i].emoji;
+    node.setAttribute('aria-hidden', 'true');
     node.style.fontSize = '0.7rem';
     track.appendChild(node);
   });
@@ -1707,8 +1738,12 @@ function positionRoadNodes() {
 
 /* ═══ JOURNEY FILTER ═══ */
 function filterJourney(type, btn) {
-  document.querySelectorAll('.journey-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.journey-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
 
   const roadView = document.getElementById('journey-road-view');
   const flatView = document.getElementById('journey-flat-view');
@@ -1736,47 +1771,70 @@ function filterJourney(type, btn) {
   ];
 
   const include = (type === 'research') ? ['research','upcoming'] : (type === 'education') ? ['education','upcoming'] : [type];
+  const typeMap = { research:'type-research', industry:'type-industry', education:'type-education', upcoming:'type-upcoming' };
   let idx = 0;
-  cardData.filter(c => include.includes(c.type)).forEach((c, i) => {
+  cardData.filter(c => include.includes(c.type)).forEach((c) => {
     const pill = c.pills.map(p => `<span class="jc-pill">${p}</span>`).join('');
-    const typeMap = { research:'type-research', industry:'type-industry', education:'type-education', upcoming:'type-upcoming' };
-    const el = document.createElement('div');
+    const el = document.createElement('article');
     el.className = 'journey-card';
     el.dataset.type = c.type;
     el.innerHTML = `
       <div class="journey-card-left">
-        <div class="jc-year">${c.year}</div>
-        <span class="jc-type ${typeMap[c.type]}">${c.type}</span>
+        <div class="jc-year"><time>${c.year}</time></div>
+        <span class="jc-type ${typeMap[c.type]}">${c.type}<span class="sr-only"> role</span></span>
       </div>
       <div class="journey-card-right">
-        <div class="jc-title">${c.title}</div>
+        <h3 class="jc-title">${c.title}</h3>
         <div class="jc-org">${c.org}</div>
-        <div class="jc-desc">${c.desc}</div>
-        <div class="jc-pills">${pill}</div>
+        <p class="jc-desc">${c.desc}</p>
+        <div class="jc-pills" aria-label="Technologies">${pill}</div>
       </div>`;
     flatView.appendChild(el);
-    const delay = idx * 90;
-    setTimeout(() => el.classList.add('revealed'), delay);
+    setTimeout(() => el.classList.add('revealed'), idx * 90);
     idx++;
   });
 }
 
 /* ═══ PUB FILTER ═══ */
 function filterPubs(cat, btn) {
-  document.querySelectorAll('.pub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pub-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+
+  let count = 0;
   document.querySelectorAll('.pub-card').forEach(card => {
     card.classList.remove('visible');
+    card.style.opacity = '';
+    card.style.transform = '';
     if (cat === 'all' || card.dataset.category.includes(cat)) {
       card.classList.add('visible');
+      count++;
     }
   });
+
+  // Update live region
+  const metaCount = document.getElementById('research-meta-count');
+  if (metaCount) {
+    const label = cat === 'all' ? 'all publications' : `${cat} publications`;
+    metaCount.querySelector('span:last-child').textContent = `Showing ${count} ${label}`;
+  }
+
+  // Stagger re-reveal
+  setTimeout(() => animatePage('research'), 50);
 }
 
 /* ═══ UPDATES FILTER ═══ */
 function filterUpdates(type, btn) {
-  document.querySelectorAll('.updates-tag').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.updates-tag').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-pressed', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-pressed', 'true');
+
   let idx = 0;
   document.querySelectorAll('.news-card').forEach(card => {
     card.classList.remove('revealed');
@@ -1790,21 +1848,53 @@ function filterUpdates(type, btn) {
   });
 }
 
-/* ═══ POETRY MODAL ═══ */
+/* ═══ POETRY MODAL — Focus Trap ═══ */
+let _prevFocus = null;
+
 function openCreative() {
-  document.getElementById('creative-overlay').classList.add('open');
+  _prevFocus = document.activeElement;
+  const overlay = document.getElementById('creative-overlay');
+  overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   closePoem();
+  // Focus the close button
+  setTimeout(() => {
+    const closeBtn = overlay.querySelector('.creative-modal-close');
+    if (closeBtn) closeBtn.focus();
+  }, 100);
 }
+
 function closeCreative() {
   document.getElementById('creative-overlay').classList.remove('open');
   document.body.style.overflow = '';
+  if (_prevFocus) _prevFocus.focus();
 }
+
 function closeCreativeIfBg(e) {
   if (e.target === document.getElementById('creative-overlay')) closeCreative();
 }
 
-/* Poem tag filter */
+// Focus trap inside modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('creative-overlay').classList.contains('open')) closeCreative();
+    return;
+  }
+  if (e.key !== 'Tab') return;
+  const overlay = document.getElementById('creative-overlay');
+  if (!overlay.classList.contains('open')) return;
+
+  const focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (e.shiftKey) {
+    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+  } else {
+    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
 function filterPoems(tag, btn) {
   document.querySelectorAll('.poetry-tag').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
@@ -1816,7 +1906,6 @@ function filterPoems(tag, btn) {
   closePoem();
 }
 
-/* Open inline poem reader */
 function openPoem(tile) {
   const kind = tile.dataset.kind;
   if (kind !== 'poem') return;
@@ -1826,12 +1915,12 @@ function openPoem(tile) {
   const reader = document.getElementById('poem-reader');
   reader.classList.add('open');
   reader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Move focus to close button for AT users
+  setTimeout(() => reader.querySelector('.poem-reader-close').focus(), 200);
 }
 function closePoem() {
   document.getElementById('poem-reader').classList.remove('open');
 }
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCreative(); });
 
 /* ═══ MAP ═══ */
 let mapInitialized = false;
@@ -1841,7 +1930,9 @@ function initMap() {
   const lat = 40.4237, lng = -86.9212;
   const map = L.map('contact-map', { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 14);
   window._contactMap = map;
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 19
+  }).addTo(map);
   const markerIcon = L.divIcon({
     html: `<div style="width:14px;height:14px;border-radius:50%;background:#A5B4FC;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`,
     className: '', iconAnchor: [7,7]
@@ -1851,20 +1942,6 @@ function initMap() {
     .openPopup();
 }
 
-/* ═══ ABOUT INIT ANIMATION ═══ */
-document.querySelectorAll('#page-about .info-block').forEach((el, i) => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(12px)';
-  el.style.transition = `opacity 0.4s ${i*0.08}s ease, transform 0.4s ${i*0.08}s ease`;
-  setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, 200 + i * 80);
-});
-
-/* Position road nodes on load if journey is active */
-window.addEventListener('load', () => {
-  if (document.getElementById('page-journey').classList.contains('active')) {
-    setTimeout(positionRoadNodes, 200);
-  }
-});
 window.addEventListener('resize', positionRoadNodes);
 </script>
 </body>
