@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,26 +60,26 @@
   --surface: #FFFFFF;
   --surface2: #F0EDE8;
   --border: rgba(0,0,0,0.09);
-  --text: #1F2937;
-  --text-soft: rgba(31,41,55,0.72);
-  --muted: #6B7280;
-  --accent: #7CAEDC;
-  --accent2: #5B9BD5;
-  --accent3: #9B8ECC;
-  --green: #3A9E7A;
-  --link-color: #5B9BD5;
+  --text: #1A1F2E;
+  --text-soft: rgba(26,31,46,0.82);
+  --muted: #4A5568;
+  --accent: #3A6EA8;
+  --accent2: #2C5F9E;
+  --accent3: #7B68B5;
+  --green: #276A53;
+  --link-color: #2C5F9E;
   --nav-bg: rgba(250,247,242,0.96);
-  --tag-bg: rgba(124,174,220,0.08);
-  --card-hover: rgba(124,174,220,0.05);
+  --tag-bg: rgba(58,110,168,0.08);
+  --card-hover: rgba(58,110,168,0.05);
   --shadow: rgba(0,0,0,0.10);
   --photo-dark: none;
   --photo-light: block;
   --road-color: #E7D8C9;
-  --road-line: rgba(124,174,220,0.35);
-  --road-glow: rgba(124,174,220,0.06);
-  --orb-a: rgba(124,174,220,0.08);
-  --orb-b: rgba(91,155,213,0.06);
-  --orb-c: rgba(155,142,204,0.07);
+  --road-line: rgba(58,110,168,0.35);
+  --road-glow: rgba(58,110,168,0.06);
+  --orb-a: rgba(58,110,168,0.07);
+  --orb-b: rgba(44,95,158,0.05);
+  --orb-c: rgba(123,104,181,0.06);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -253,8 +253,8 @@ h1 {
 }
 .hero-sub { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.2rem; color: var(--muted); margin-bottom: 1.8rem; }
 .about-bio p { font-size: 0.95rem; color: var(--text-soft); line-height: 1.85; margin-bottom: 1.1rem; }
-.about-bio strong { color: var(--accent); font-weight: 500; }
-.about-bio a { color: var(--link-color); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+.about-bio strong { color: var(--accent); font-weight: 600; }
+.about-bio a { color: var(--link-color); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; font-weight: 500; }
 .about-bio a:hover { color: var(--accent); }
 
 .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-top: 0; }
@@ -431,8 +431,6 @@ h1 {
 .journey-flat .journey-card-left { display: flex; flex-direction: column; gap: 0.4rem; }
 
 /* ═══ RESEARCH PAGE ═══ */
-#page-research { padding: 5rem 3.5rem 4rem; display: none; }
-#page-research.active { display: block; }
 
 /* Research page: animated underline on heading */
 #page-research .page-header h2 {
@@ -586,6 +584,103 @@ h1 {
 #page-updates { padding: 5rem 3.5rem 4rem; display: none; }
 #page-updates.active { display: block; }
 
+/* ═══ RESEARCH + UPDATES COMBINED LAYOUT ═══ */
+#page-research { display: none; padding: 5rem 3.5rem 4rem; }
+#page-research.active { display: block; }
+
+.research-updates-row {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 3rem;
+  align-items: start;
+}
+
+.research-main-col {}
+
+.updates-side-col {
+  position: sticky;
+  top: 5.5rem;
+}
+
+.updates-side-col .page-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.updates-side-col .news-grid {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* Research card with image */
+.pub-card-img {
+  width: 100%; height: 130px;
+  object-fit: cover; border-radius: 2px;
+  margin-bottom: 1rem;
+  background: var(--surface2);
+  display: block;
+  border: 1px solid var(--border);
+}
+.pub-card-img-placeholder {
+  width: 100%; height: 130px;
+  background: linear-gradient(135deg, var(--surface2) 0%, var(--tag-bg) 100%);
+  border-radius: 2px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Update card with image */
+.news-card-img {
+  width: 100%; height: 90px;
+  object-fit: cover; border-radius: 2px;
+  margin-bottom: 0.9rem;
+  background: var(--surface2);
+  display: block;
+  border: 1px solid var(--border);
+}
+.news-card-img-placeholder {
+  width: 100%; height: 90px;
+  background: linear-gradient(135deg, var(--surface2) 0%, var(--tag-bg) 100%);
+  border-radius: 2px;
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1100px) {
+  .research-updates-row {
+    grid-template-columns: 1fr;
+  }
+  .updates-side-col {
+    position: static;
+  }
+  .updates-side-col .news-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .updates-side-col .news-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Updates animated header accent */
 #page-updates .page-header {
   position: relative;
@@ -695,6 +790,8 @@ h1 {
   .poetry-tiles { grid-template-columns: 1fr 1fr; }
   .page-footer { flex-direction: column; gap: 0.4rem; text-align: center; padding: 1.4rem; }
   .accent-line-left, .accent-line-right { display: none; }
+  .research-updates-row { grid-template-columns: 1fr; }
+  .updates-side-col { position: static; }
 }
 @media (max-width: 600px) {
   .beyond-grid { grid-template-columns: 1fr; }
@@ -724,12 +821,11 @@ h1 {
     <button class="nav-tab" role="tab" data-page="journey" onclick="showPage('journey')">Journey</button>
     <button class="nav-tab" role="tab" data-page="research" onclick="showPage('research')">Research</button>
     <button class="nav-tab" role="tab" data-page="beyond" onclick="showPage('beyond')">Beyond</button>
-    <button class="nav-tab" role="tab" data-page="updates" onclick="showPage('updates')">Updates</button>
     <button class="nav-tab" role="tab" data-page="contact" onclick="showPage('contact')">Contact</button>
   </div>
   <div class="nav-right">
     <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light/dark colour scheme" id="theme-btn">
-      <span aria-hidden="true">☀️</span>
+      <span aria-hidden="true">🌙</span>
     </button>
     <a href="https://drive.google.com/file/d/1CEiT-ZJarq0FspMWjh4azyNx75rTmXhU/view" target="_blank" class="nav-cv" aria-label="Download CV (opens in new tab)">CV <span aria-hidden="true">↗</span></a>
   </div>
@@ -773,12 +869,12 @@ h1 {
         <span class="scholar-live-dot" aria-hidden="true" title="Stats from profile"></span>
       </div>
       <div class="scholar-stats">
-        <div class="stat"><span class="stat-num" aria-label="19 citations">19</span><span class="stat-label" aria-hidden="true">Citations</span></div>
+        <div class="stat"><span class="stat-num" aria-label="21 citations">25</span><span class="stat-label" aria-hidden="true">Citations</span></div>
         <div class="stat"><span class="stat-num" aria-label="h-index 3">3</span><span class="stat-label" aria-hidden="true">h-index</span></div>
-        <div class="stat"><span class="stat-num" aria-label="i10-index 0">0</span><span class="stat-label" aria-hidden="true">i10-index</span></div>
+        <div class="stat"><span class="stat-num" aria-label="i10-index 0">1</span><span class="stat-label" aria-hidden="true">i10-index</span></div>
       </div>
       <p style="font-size:0.65rem;color:var(--muted);margin-top:0.8rem;font-family:'DM Mono',monospace;">
-        <span style="color:rgba(136,136,136,0.5);margin-left:0.5rem;">last updated Apr 2026</span>
+        <span style="color:rgba(136,136,136,0.5);margin-left:0.5rem;">last updated Jul 2026</span>
       </p>
     </div>
 
@@ -801,25 +897,22 @@ h1 {
   <div class="about-right">
     <h1>Ankush Gupta</h1>
     <p style="font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;color:var(--muted);margin-bottom:0.8rem;text-transform:uppercase;">He / They</p>
-    <p class="hero-sub">Foundational &amp; Responsible AI</p>
+    <p class="hero-sub">Foundational &amp; Multimodal AI</p>
 
     <div class="about-bio">
       <p>
-        I am an incoming <strong>PhD student in Computer Science at Purdue University</strong>, working under
+       I am a PhD student in <strong> Computer Science </strong> at <strong>Purdue University </strong> (started Fall 2026), working with
         <strong><a href="https://www.cs.purdue.edu/homes/ab/" target="_blank">Dr. Aniket Bera</a></strong>
         in the <strong><a href="https://ideas.cs.purdue.edu/" target="_blank">IDEAS Lab</a></strong>.
-        My research broadly focuses on <strong>foundational multimodal responsible AI</strong>, with an emphasis on building robust, and generalizable models.
+        My research focuses on <strong>foundational multimodal AI</strong>, building generalizable models that integrate perception, language, and embodied reasoning for real-world robotic deployment.
       </p>
       <p>
-        During my undergraduate studies at <strong>IIIT Delhi</strong> (B.Tech CS, 2021–2025), I worked on
-        <strong>multimodal emotion understanding</strong>, <strong>physiological signal modeling</strong>, and
-        <strong>real-world data collection frameworks</strong> with
-        <strong><a href="https://chcc.ai/" target="_blank">Prof. Pushpendra Singh</a></strong> and
-        Prof. Mohan Kumar. I also worked on <strong>scholarly recommendation systems</strong> using structured representations and graph-based methods with
+        Before Purdue, I completed my B.Tech in Computer Science at <strong>IIIT Delhi</strong> (2021–2025), where I worked on
+        <strong>multimodal emotion understanding</strong>, and <strong>physiological signal modeling</strong> with
+        <strong><a href="https://chcc.ai/" target="_blank">Prof. Pushpendra Singh</a></strong> and Prof. Mohan Kumar, and on <strong>scholarly recommendation systems</strong> with
         <strong><a href="https://ads-ai.github.io/" target="_blank">Prof. Mukesh Mohania</a></strong>.
-        This work led to publications at <strong>NeurIPS 2024 &amp; 2025</strong>, <strong>ACM IMWUT 2025</strong>, and minor revision at<strong> TACL, PVLDB </strong>.
+        This work led to publications at <strong>NeurIPS 2024 &amp; 2025</strong>, <strong>ACM IMWUT 2025</strong>, and papers under review at<strong> TACL &amp; EDBT</strong>.
       </p>
-      <p>I have also briefly worked on <strong>applied machine learning systems</strong> and scalable ML pipelines for time-series modeling in the fintech domain.</p>
       <p>I am interested in <strong>research collaborations</strong> and <strong>summer internships</strong>.</p>
     </div>
 
@@ -833,21 +926,20 @@ h1 {
     <div class="info-block" role="listitem">
       <div class="info-block-title" id="honors-heading">Academic Honors</div>
       <ul class="info-list" aria-labelledby="honors-heading">
+        <li>Started PhD at Purdue (Fall 2026)</li>
         <li>Published at NeurIPS '24 &amp; '25</li>
-        <li>Published at IMWUT '25, TACL '26</li>
-        <li>Google DeepMind Symposium Invitee, 2024</li>
         <li>oSTEM Grad Application Scholarship, 2025</li>
+        <li>Google DeepMind Symposium Invitee, 2024</li>
         <li>NTSE Scholar, 2019</li>
       </ul>
     </div>
     <div class="info-block" role="listitem">
       <div class="info-block-title" id="interests-heading">Research Interests</div>
       <ul class="info-list" aria-labelledby="interests-heading">
-        <li>Multimodal Foundational Models</li>
-        <li>Human-Centered AI</li>
-        <li>Time-Series Signal Processing</li>
-        <li>Mental Health &amp; Emotion AI</li>
-        <li>NLP &amp; Society</li>
+        <li>Foundational Multimodal Models</li>
+        <li>mbodied AI &amp; Learning</li>
+        <li>Perception &amp; Language Grounding</li>
+        <li>Human-Centered Intelligent Systems</li>
       </ul>
     </div>
     <div class="info-block" role="listitem">
@@ -955,14 +1047,18 @@ h1 {
 
       <div class="journey-col-right" id="right-col">
         <div class="journey-slot" data-slot="0">
-          <article class="journey-card revealed" data-type="upcoming" style="animation-delay:0.08s">
-            <div class="jc-year"><time>2026 → Upcoming</time></div>
-            <span class="jc-type type-upcoming">Upcoming<span class="sr-only"> role</span></span>
+          <article class="journey-card revealed" data-type="education" style="animation-delay:0.08s">
+            <div class="jc-year"><time>Fall 2026 → Present</time></div>
+            <span class="jc-type type-education">Education<span class="sr-only"> role</span></span>
             <h3 class="jc-title">PhD in Computer Science</h3>
             <div class="jc-org">Purdue University · IDEAS Lab · Dr. Aniket Bera</div>
-            <p class="jc-desc">Working on multimodal foundation models, with a focus on building scalable and responsible AI systems.</p>
-            <div class="jc-pills" aria-label="Focus areas"><span class="jc-pill">Multimodal Systems</span><span class="jc-pill">Foundation Models</span><span class="jc-pill">Robustness</span><span class="jc-pill">Responsible AI</span></div>
-          </article>
+    <p class="jc-desc">Researching foundational multimodal AI, building generalizable models at the intersection of perception, language, and embodied intelligence for real-world robotic deployment.</p>
+            <div class="jc-pills" aria-label="Focus areas">
+      <span class="jc-pill">Foundational Multimodal Models</span>
+      <span class="jc-pill">Embodied AI</span>
+      <span class="jc-pill">Robotic Deployment</span>
+      <span class="jc-pill">Perception & Language</span>
+    </div>         </article>
         </div>
         <div class="journey-slot empty" data-slot="1"></div>
         <div class="journey-slot" data-slot="2">
@@ -1011,90 +1107,242 @@ h1 {
 </div>
 
 <!-- ═══ RESEARCH ═══ -->
+<!-- ═══ RESEARCH ═══ -->
 <div id="page-research" class="page" role="tabpanel" aria-labelledby="tab-research">
-  <div class="section-label" aria-hidden="true">Publications</div>
-  <div class="page-header">
-    <h2>Selected Research</h2>
-    <p>Published in A* venues. Filter by theme below. Full list on <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2)" aria-label="Google Scholar profile (opens in new tab)">Google Scholar <span aria-hidden="true">↗</span></a></p>
-  </div>
-  <div class="research-meta" aria-live="polite" aria-atomic="true" id="research-meta-count">
-    <span class="research-meta-dot" aria-hidden="true"></span>
-    <span>Showing all publications</span>
-  </div>
 
-  <div class="pub-tabs" role="tablist" aria-label="Filter publications by topic">
-    <button class="pub-tab active" role="tab" aria-selected="true" onclick="filterPubs('all',this)">All</button>
-    <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('Core-AI',this)">Core AI</button>
-    <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('NLP',this)">NLP &amp; Society</button>
-    <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('HCAI',this)">HCI</button>
-  </div>
+  <div class="research-updates-row">
 
-  <div class="pub-grid" role="list" aria-label="Publications">
-
-    <article class="pub-card visible" data-category="Core-AI" role="listitem">
-      <div class="pub-venue">NeurIPS 2025</div>
-      <h3 class="pub-title">FEEL: Quantifying Heterogeneity in Physiological Signals for Generalizable Emotion Recognition</h3>
-      <p class="pub-abstract">A large-scale benchmarking framework for emotion recognition from physiological signals, unifying evaluation across 19 EDA and PPG datasets. FEEL benchmarks 16 architectures across traditional, deep, and self-supervised paradigms under both within- and cross-dataset settings, revealing strong generalization of contrastive signal-language pretraining and the continued robustness of feature-based models in low-resource environments.</p>
-      <div class="pub-links">
-        <a href="http://neurips.cc/virtual/2025/loc/san-diego/poster/121715" target="_blank" class="pub-link" aria-label="View FEEL paper at NeurIPS 2025 (opens in new tab)">NeurIPS 2025</a>
-        <a href="https://alchemy18.github.io/FEEL_Benchmark/" target="_blank" class="pub-link" aria-label="FEEL project page (opens in new tab)">Project Page</a>
+    <!-- LEFT: Research Publications -->
+    <div class="research-main-col">
+      <div class="section-label" aria-hidden="true">Publications</div>
+      <div class="page-header">
+        <h2>Selected Research</h2>
+        <p>Published in core CS venues. Filter by theme below. Full list on <a href="https://scholar.google.com/citations?user=6LH_olwAAAAJ&hl=en" target="_blank" style="color:var(--accent2)" aria-label="Google Scholar profile (opens in new tab)">Google Scholar <span aria-hidden="true">↗</span></a></p>
       </div>
-    </article>
-
-    <article class="pub-card visible" data-category="Core-AI" role="listitem">
-      <div class="pub-venue">NeurIPS 2024</div>
-      <h3 class="pub-title">EEVR: A Dataset of Paired Physiological Signals and Textual Descriptions for Joint Emotion Representation Learning</h3>
-      <p class="pub-abstract">A multimodal dataset pairing EDA and PPG signals from 360° VR-based emotion elicitation with participant-level textual descriptions (37 subjects), enabling context-aware emotion recognition. Introduces contrastive language-signal pretraining (CLSP), improving performance and enabling strong zero-shot transfer across datasets.</p>
-      <div class="pub-links">
-        <a href="https://nips.cc/virtual/2024/poster/97493" target="_blank" class="pub-link" aria-label="View EEVR paper at NeurIPS 2024 (opens in new tab)">NeurIPS</a>
-        <a href="https://melangelabiiitd.github.io/EEVR/" target="_blank" class="pub-link" aria-label="EEVR project page (opens in new tab)">Project Page</a>
+      <div class="research-meta" aria-live="polite" aria-atomic="true" id="research-meta-count">
+        <span class="research-meta-dot" aria-hidden="true"></span>
+        <span>Showing all publications</span>
       </div>
-    </article>
 
-    <article class="pub-card visible" data-category="HCAI" role="listitem">
-      <div class="pub-venue">ACM IMWUT 2025 · UbiComp</div>
-      <h3 class="pub-title">AnnoSense: Navigating the Complexities of Collecting and Annotating Everyday Emotion Data for AI</h3>
-      <p class="pub-abstract">A stakeholder-informed framework for real-world emotion data collection, developed through studies with 119 participants including the public, clinicians, and AI researchers. Produces 15 actionable guidelines for reliable, usable, and ethically grounded emotion annotation, validated by domain experts.</p>
-      <div class="pub-links">
-        <a href="http://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="pub-link" aria-label="View AnnoSense paper in ACM Digital Library (opens in new tab)">ACM DL</a>
-        <a href="https://www.ubicomp.org/ubicomp-iswc-2025/program/" target="_blank" class="pub-link" aria-label="UbiComp 2025 program (opens in new tab)">UbiComp</a>
+      <div class="pub-tabs" role="tablist" aria-label="Filter publications by topic">
+        <button class="pub-tab active" role="tab" aria-selected="true" onclick="filterPubs('all',this)">All</button>
+        <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('Core-AI',this)">Core AI</button>
+        <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('NLP',this)">NLP &amp; Society</button>
+        <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('HCAI',this)">HCI</button>
+        <button class="pub-tab" role="tab" aria-selected="false" onclick="filterPubs('Robotics',this)">Robotics</button>
       </div>
-    </article>
 
-    <article class="pub-card visible" data-category="NLP" role="listitem">
-      <div class="pub-venue">Under Review</div>
-      <h3 class="pub-title">CITAR: Citation Inference using Taxonomy-Aligned Retrieval and Context-Aware Entity Matching</h3>
-      <p class="pub-abstract">A context-aware citation recommendation system that aligns hierarchical academic taxonomies to generate relevant citations with precise insertion points. Achieves strong retrieval performance (Recall@10 0.35, MRR 0.21) while improving exposure balance across the corpus, demonstrating effective trade-offs between relevance, efficiency, and fairness.</p>
-      <div class="pub-links">
-        <a href="#" class="pub-link" style="opacity:0.4;" aria-label="Under review, link unavailable" aria-disabled="true">Under Review</a>
+      <div class="pub-grid" role="list" aria-label="Publications">
+
+        <article class="pub-card visible" data-category="Core-AI" role="listitem">
+          <div class="pub-venue">NeurIPS 2025</div>
+          <h3 class="pub-title">FEEL: Quantifying Heterogeneity in Physiological Signals for Generalizable Emotion Recognition</h3>
+          <p class="pub-authors">Pragya Singh, <strong>Ankush Gupta</strong>, Somay Jalan, Mohan Kumar, Pushpendra Singh</p>
+          <p class="pub-abstract">A large-scale benchmarking framework for emotion recognition from physiological signals, unifying evaluation across 19 EDA and PPG datasets. Benchmarks 16 architectures under within- and cross-dataset settings, revealing strong generalization of contrastive signal-language pretraining.</p>
+          <div class="pub-links">
+            <a href="http://neurips.cc/virtual/2025/loc/san-diego/poster/121715" target="_blank" class="pub-link" aria-label="View FEEL paper at NeurIPS 2025 (opens in new tab)">NeurIPS 2025</a>
+            <a href="https://alchemy18.github.io/FEEL_Benchmark/" target="_blank" class="pub-link" aria-label="FEEL project page (opens in new tab)">Project Page</a>
+          </div>
+        </article>
+
+        <article class="pub-card visible" data-category="Core-AI" role="listitem">
+          <div class="pub-venue">NeurIPS 2024</div>
+          <h3 class="pub-title">EEVR: A Dataset of Paired Physiological Signals and Textual Descriptions for Joint Emotion Representation Learning</h3>
+          <p class="pub-authors">Pragya Singh, <strong>Ankush Gupta</strong>, Ritvik Budhiraja, Anshul Goswami, Mohan Kumar, Pushpendra Singh</p>
+          <p class="pub-abstract">A multimodal dataset pairing EDA and PPG signals from 360° VR-based emotion elicitation with participant-level textual descriptions (37 subjects). Introduces contrastive language-signal pretraining (CLSP), enabling strong zero-shot transfer across datasets.</p>
+          <div class="pub-links">
+            <a href="https://nips.cc/virtual/2024/poster/97493" target="_blank" class="pub-link" aria-label="View EEVR paper at NeurIPS 2024 (opens in new tab)">NeurIPS</a>
+            <a href="https://melangelabiiitd.github.io/EEVR/" target="_blank" class="pub-link" aria-label="EEVR project page (opens in new tab)">Project Page</a>
+          </div>
+        </article>
+
+        <article class="pub-card visible" data-category="HCAI" role="listitem">
+          <div class="pub-venue">ACM IMWUT 2025 · UbiComp</div>
+          <h3 class="pub-title">AnnoSense: Navigating the Complexities of Collecting and Annotating Everyday Emotion Data for AI</h3>
+          <p class="pub-authors">Pragya Singh, <strong>Ankush Gupta</strong>, Mohan Kumar, Pushpendra Singh</p>
+          <p class="pub-abstract">A stakeholder-informed framework for real-world emotion data collection, developed through studies with 119 participants. Produces 15 actionable guidelines for reliable, usable, and ethically grounded emotion annotation.</p>
+          <div class="pub-links">
+            <a href="http://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="pub-link" aria-label="View AnnoSense paper in ACM Digital Library (opens in new tab)">ACM DL</a>
+            <a href="https://www.ubicomp.org/ubicomp-iswc-2025/program/" target="_blank" class="pub-link" aria-label="UbiComp 2025 program (opens in new tab)">UbiComp</a>
+          </div>
+        </article>
+
+        <article class="pub-card visible" data-category="NLP" role="listitem">
+          <div class="pub-venue">Under Review</div>
+          <h3 class="pub-title">CITAR: Citation Inference using Taxonomy-Aligned Retrieval and Context-Aware Entity Matching</h3>
+          <p class="pub-authors"><strong>Ankush Gupta</strong>, Adya Aggarwal, Mukesh Mohania</p>
+          <p class="pub-abstract">A context-aware citation recommendation system aligning hierarchical academic taxonomies. Achieves strong retrieval performance (Recall@10 0.35, MRR 0.21) while improving exposure balance across the corpus.</p>
+          <div class="pub-links">
+            <a href="#" class="pub-link" style="opacity:0.4;" aria-label="Under review, link unavailable" aria-disabled="true">Under Review</a>
+          </div>
+        </article>
+
+        <article class="pub-card visible" data-category="Core-AI NLP" role="listitem">
+          <div class="pub-venue">Under Review</div>
+          <h3 class="pub-title">Toward Inclusive NLP: A Survey of LGBTQIA+ Representation and Gaps in Language Technologies</h3>
+          <p class="pub-authors">Ankush Gupta et al.</p>
+          <p class="pub-abstract">A systematic survey of 86 NLP papers examining language technologies and LGBTQIA+ communities. Identifies key gaps in bias mitigation, intersectional representation, and non-English settings.</p>
+          <div class="pub-links">
+            <a href="#" class="pub-link" style="opacity:0.4;" aria-label="Under review, link unavailable" aria-disabled="true">Under Review</a>
+          </div>
+        </article>
+
+        <article class="pub-card visible" data-category="HCAI" role="listitem">
+          <div class="pub-venue">ACM India HCI 2023 · Springer SCI</div>
+          <h3 class="pub-title">Jail Diaries: An Interactive Pop-Up Book Art Installation</h3>
+          <p class="pub-authors">Ankush Gupta et al.</p>
+          <p class="pub-abstract">Interactive learning experiences for children about the Indian freedom struggle, using visual projection mapping and gesture tracking. Published in Springer "Studies in Computational Intelligence."</p>
+          <div class="pub-links">
+            <a href="https://link.springer.com/book/10.1007/978-981-97-4335-3" target="_blank" class="pub-link" aria-label="View in Springer (opens in new tab)">Springer</a>
+          </div>
+        </article>
+
       </div>
-    </article>
 
-    <article class="pub-card visible" data-category="Core-AI NLP" role="listitem">
-      <div class="pub-venue">Under Review</div>
-      <h3 class="pub-title">Toward Inclusive NLP: A Survey of LGBTQIA+ Representation and Gaps in Language Technologies</h3>
-      <p class="pub-abstract">A systematic survey of 86 NLP papers examining the relationship between language technologies and LGBTQIA+ communities. Identifies key gaps in proactive bias mitigation, intersectional representation, and non-English settings, highlighting opportunities for building more inclusive and equitable NLP systems.</p>
-      <div class="pub-links">
-        <a href="#" class="pub-link" style="opacity:0.4;" aria-label="Under review, link unavailable" aria-disabled="true">Under Review</a>
+      <div class="page-footer">
+        <p>Ankush Gupta · PhD Student · He/They</p>
+        <p>MultiModal AI · Foundational AI · Responsible AI</p>
       </div>
-    </article>
+    </div><!-- end .research-main-col -->
 
-    <article class="pub-card visible" data-category="HCAI" role="listitem">
-      <div class="pub-venue">ACM India HCI 2023 · Springer SCI</div>
-      <h3 class="pub-title">Jail Diaries: An Interactive Pop-Up Book Art Installation</h3>
-      <p class="pub-abstract">Interactive learning experiences for children about the Indian freedom struggle, using visual projection mapping and gesture tracking. Published in Springer "Studies in Computational Intelligence."</p>
-      <div class="pub-links">
-        <a href="https://link.springer.com/book/10.1007/978-981-97-4335-3" target="_blank" class="pub-link" aria-label="View in Springer (opens in new tab)">Springer</a>
+    <!-- RIGHT: Updates sidebar -->
+    <div class="updates-side-col">
+      <div class="section-label" aria-hidden="true">Updates</div>
+      <div class="page-header">
+        <h2>News &amp; Activity</h2>
+        <p style="font-size:0.82rem;">Recent highlights. <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" style="color:var(--accent2)" aria-label="Follow on LinkedIn (opens in new tab)">LinkedIn ↗</a></p>
       </div>
-    </article>
 
-  </div>
+      <div class="updates-filter" role="group" aria-label="Filter news by category">
+        <button class="updates-tag active" aria-pressed="true" onclick="filterUpdates('all',this)">All</button>
+        <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('conference',this)">Conference</button>
+        <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('education',this)">Education</button>
+        <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('visiting',this)">Visiting</button>
+      </div>
 
-  <div class="page-footer">
-    <p>Ankush Gupta · PhD Incoming · He/They</p>
-    <p>MultiModal AI · Foundational AI · Responsible AI</p>
-  </div>
+      <div class="news-grid" id="news-grid" role="list" aria-label="News items" style="grid-template-columns:1fr;">
+
+        <article class="news-card" data-update-type="education" role="listitem">
+          <div class="news-card-img-wrap">
+            <img
+              src="purdue.jpeg"
+              alt="Purdue University"
+              class="news-card-img news-card-img--cover"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+            >
+            <div class="news-card-img-fallback" style="display:none;">Purdue University · PhD CS</div>
+          </div>
+          <div class="news-card-header"><span class="news-venue">Fall 2026</span><span class="news-badge badge-education">Education<span class="sr-only"> category</span></span></div>
+          <h3 class="news-title">Joining PhD in Computer Science at Purdue University</h3>
+          <p class="news-excerpt">Excited to begin my PhD under Dr. Aniket Bera at the IDEAS Lab, working on foundational multimodal AI for real-world robotic deployment.</p>
+          <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="news-source" aria-label="LinkedIn post about PhD at Purdue (opens in new tab)">→ LinkedIn Post</a>
+        </article>
+
+        <article class="news-card" data-update-type="conference" role="listitem">
+          <div class="news-card-img-wrap">
+            <img
+              src="NeurIPS-mauve-blog.jpg"
+              alt="NeurIPS 2025"
+              class="news-card-img news-card-img--cover"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+            >
+            <div class="news-card-img-fallback" style="display:none;">NeurIPS 2025 · FEEL Paper</div>
+          </div>
+          <div class="news-card-header"><span class="news-venue">NeurIPS 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
+          <h3 class="news-title">FEEL Paper Accepted at NeurIPS 2025</h3>
+          <p class="news-excerpt">Benchmarking framework for physiological signal emotion recognition across 19 datasets accepted at NeurIPS 2025 D&amp;B track.</p>
+          <a href="https://openreview.net/forum?id=JxuFBB5OpD" target="_blank" class="news-source" aria-label="FEEL paper on OpenReview (opens in new tab)">→ Paper Link</a>
+        </article>
+
+        <article class="news-card" data-update-type="conference" role="listitem">
+          <div class="news-card-img-wrap">
+            <img
+              src="naacl.jpeg"
+              alt="Queer in AI at NAACL 2025"
+              class="news-card-img news-card-img--cover"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+            >
+            <div class="news-card-img-fallback" style="display:none;">NAACL 2025 · Queer in AI</div>
+          </div>
+          <div class="news-card-header"><span class="news-venue">NAACL 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
+          <h3 class="news-title">Workshop Chair at Queer in AI @ NAACL 2025</h3>
+          <p class="news-excerpt">Archival workshop chair for the Queer in AI workshop — organizing a space for LGBTQ+ researchers at NAACL 2025.</p>
+          <a href="https://aclanthology.org/2025.queerinai-main.pdf" target="_blank" class="news-source" aria-label="Queer in AI proceedings (opens in new tab)">→ Proceedings</a>
+        </article>
+
+        <article class="news-card" data-update-type="visiting" role="listitem">
+          <div class="news-card-img-wrap">
+            <img
+              src="dp.jpg"
+              alt="Google DeepMind Symposium 2024"
+              class="news-card-img news-card-img--cover"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+            >
+            <div class="news-card-img-fallback" style="display:none;">Google DeepMind Symposium 2024</div>
+          </div>
+          <div class="news-card-header"><span class="news-venue">2024</span><span class="news-badge badge-visiting">Visiting<span class="sr-only"> category</span></span></div>
+          <h3 class="news-title">Invited to Google DeepMind Research Symposium</h3>
+          <p class="news-excerpt">Selected as invited attendee at the Google DeepMind Research Symposium 2024.</p>
+          <a href="https://www.linkedin.com/posts/ankush-gupta-9a9211224_neurips-2024-gdm-symposium-2025-activity-7292953681753255936-eJ4o" target="_blank" class="news-source" aria-label="LinkedIn post about Google DeepMind Symposium (opens in new tab)">→ LinkedIn Post</a>
+        </article>
+
+      </div>
+
+    </div><!-- end .updates-side-col -->
+
+  </div><!-- end .research-updates-row -->
+
 </div>
+
+<!-- Add these styles inside your existing <style> block -->
+<style>
+/* News card image wrapper — enforces consistent height, no squishing */
+.news-card-img-wrap {
+  width: 100%;
+  height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* cover: fills the box, crops edges (good for photos like rainbow flag) */
+.news-card-img--cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* contain: fits whole logo inside box with padding (good for logos) */
+.news-card-img--contain {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.9rem 1.2rem;
+  display: block;
+}
+
+/* Fallback shown if image fails to load */
+.news-card-img-fallback {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  padding: 0.5rem;
+  line-height: 1.6;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+</style>
 
 <!-- ═══ BEYOND ═══ -->
 <div id="page-beyond" class="page" role="tabpanel" aria-labelledby="tab-beyond">
@@ -1477,71 +1725,15 @@ h1 {
   </div>
 </div>
 
-<!-- ═══ UPDATES ═══ -->
-<div id="page-updates" class="page" role="tabpanel" aria-labelledby="tab-updates">
-  <div class="section-label" aria-hidden="true">Updates</div>
-  <div class="page-header">
-    <h2>News &amp; Activity</h2>
-    <p>Recent highlights and announcements. <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" style="color:var(--accent2)" aria-label="Follow on LinkedIn (opens in new tab)">Follow on LinkedIn <span aria-hidden="true">↗</span></a> for the full feed.</p>
-  </div>
-
-  <div class="updates-filter" role="group" aria-label="Filter news by category">
-    <button class="updates-tag active" aria-pressed="true" onclick="filterUpdates('all',this)">All</button>
-    <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('conference',this)">Conference</button>
-    <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('education',this)">Education</button>
-    <button class="updates-tag" aria-pressed="false" onclick="filterUpdates('visiting',this)">Visiting / Lecture</button>
-  </div>
-
-  <div class="news-grid" id="news-grid" role="list" aria-label="News items">
-    <article class="news-card" data-update-type="education" role="listitem">
-      <div class="news-card-header"><span class="news-venue">2025</span><span class="news-badge badge-education">Education<span class="sr-only"> category</span></span></div>
-      <h3 class="news-title">Joining PhD in Computer Science at Purdue University</h3>
-      <p class="news-excerpt">Excited to begin my PhD journey under Dr. Aniket Bera at the IDEAS Lab, focused on multimodal foundational models.</p>
-      <a href="https://linkedin.com/in/ankush-gupta-9a9211224/" target="_blank" class="news-source" aria-label="LinkedIn post about PhD at Purdue (opens in new tab)">→ LinkedIn Post</a>
-    </article>
-
-    <article class="news-card" data-update-type="conference" role="listitem">
-      <div class="news-card-header"><span class="news-venue">NeurIPS 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
-      <h3 class="news-title">FEEL Paper Accepted at NeurIPS 2025</h3>
-      <p class="news-excerpt">Our benchmarking framework for physiological signal emotion recognition across 19 datasets was accepted at NeurIPS 2025 Datasets &amp; Benchmarks track.</p>
-      <a href="https://openreview.net/forum?id=JxuFBB5OpD" target="_blank" class="news-source" aria-label="FEEL paper on OpenReview (opens in new tab)">→ Paper Link</a>
-    </article>
-
-    <article class="news-card" data-update-type="conference" role="listitem">
-      <div class="news-card-header"><span class="news-venue">NAACL 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
-      <h3 class="news-title">Workshop Chair at Queer in AI @ NAACL 2025</h3>
-      <p class="news-excerpt">Served as archival workshop chair for the Queer in AI workshop at NAACL 2025 — organizing a space for LGBTQ+ researchers to present and connect.</p>
-      <a href="https://aclanthology.org/2025.queerinai-main.pdf" target="_blank" class="news-source" aria-label="Queer in AI workshop proceedings (opens in new tab)">→ Proceedings</a>
-    </article>
-
-    <article class="news-card" data-update-type="conference" role="listitem">
-      <div class="news-card-header"><span class="news-venue">ACM IMWUT 2025</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
-      <h3 class="news-title">AnnoSense Accepted at ACM IMWUT / UbiComp 2025</h3>
-      <p class="news-excerpt">Our framework for ethical emotion data annotation accepted at ACM IMWUT 2025, to be presented at UbiComp/ISWC 2025.</p>
-      <a href="https://dl.acm.org/doi/abs/10.1145/3749519" target="_blank" class="news-source" aria-label="AnnoSense paper in ACM Digital Library (opens in new tab)">→ Paper Link</a>
-    </article>
-
-    <article class="news-card" data-update-type="visiting" role="listitem">
-      <div class="news-card-header"><span class="news-venue">2024</span><span class="news-badge badge-visiting">Visiting / Lecture<span class="sr-only"> category</span></span></div>
-      <h3 class="news-title">Invited to Google DeepMind Research Symposium</h3>
-      <p class="news-excerpt">Selected as an invited attendee at the Google DeepMind Research Symposium 2024.</p>
-      <a href="https://www.linkedin.com/posts/ankush-gupta-9a9211224_neurips-2024-gdm-symposium-2025-activity-7292953681753255936-eJ4o" target="_blank" class="news-source" aria-label="LinkedIn post about Google DeepMind Symposium (opens in new tab)">→ LinkedIn Post</a>
-    </article>
-
-    <article class="news-card" data-update-type="conference" role="listitem">
-      <div class="news-card-header"><span class="news-venue">NeurIPS 2024</span><span class="news-badge badge-conference">Conference<span class="sr-only"> category</span></span></div>
-      <h3 class="news-title">EEVR Paper Accepted at NeurIPS 2024</h3>
-      <p class="news-excerpt">Our VR-based physiological emotion dataset with contrastive language-signal pretraining accepted at NeurIPS 2024.</p>
-      <a href="https://neurips.cc/virtual/2024/poster/97493" target="_blank" class="news-source" aria-label="EEVR paper at NeurIPS 2024 (opens in new tab)">→ NeurIPS 2024</a>
-    </article>
-  </div>
-
-  <div class="page-footer">
-    <p>Ankush Gupta · PhD Incoming · He/They</p>
-    <p>MultiModal AI · Foundational AI · Responsible AI</p>
+<!-- ═══ UPDATES ═══ (now embedded in Research tab) -->
+<div id="page-updates" class="page" role="tabpanel" aria-labelledby="tab-updates" style="display:none;">
+  <div style="padding:5rem 3.5rem 4rem;text-align:center;">
+    <div class="section-label" style="justify-content:center;" aria-hidden="true">Updates</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:1rem;">News &amp; Activity</h2>
+    <p style="color:var(--muted);margin-bottom:2rem;">Updates are shown alongside the Research page for quick reference.</p>
+    <button class="btn btn-primary" onclick="showPage('research')">Go to Research &amp; Updates →</button>
   </div>
 </div>
-
 <!-- ═══ CONTACT ═══ -->
 <div id="page-contact" class="page" role="tabpanel" aria-labelledby="tab-contact">
   <div class="contact-text" style="padding:0;">
@@ -1586,10 +1778,17 @@ h1 {
 </main><!-- end #main-content -->
 
 <script>
+/* ═══ SYSTEM THEME DETECTION ═══ */
+(function() {
+  const saved = localStorage.getItem('theme');
+  const preferred = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', preferred);
+})();
+
 /* ═══════════════════════════════════════════
    DEEP LINKS — Hash-based routing
 ═══════════════════════════════════════════ */
-const VALID_PAGES = ['about','journey','research','beyond','updates','contact'];
+const VALID_PAGES = ['about','journey','research','beyond','contact'];
 
 /* On load: read hash, navigate to correct page */
 window.addEventListener('load', () => {
@@ -1623,7 +1822,9 @@ function toggleTheme() {
   const html = document.documentElement;
   const btn = document.getElementById('theme-btn');
   const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  const next = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
   btn.querySelector('span').textContent = isDark ? '🌙' : '☀️';
   btn.setAttribute('aria-label', isDark ? 'Switch to dark colour scheme' : 'Switch to light colour scheme');
   if (window._contactMap) window._contactMap.invalidateSize();
@@ -1701,6 +1902,12 @@ function animatePage(id) {
         el.style.transform = 'translateY(0)';
       }, i * 100);
     });
+    // Also animate news cards in the updates sidebar
+    document.querySelectorAll('#page-research .news-card').forEach((el, i) => {
+      el.classList.remove('revealed');
+      void el.offsetWidth;
+      setTimeout(() => el.classList.add('revealed'), 200 + i * 80);
+    });
   }
 }
 
@@ -1760,8 +1967,7 @@ function filterJourney(type, btn) {
   flatView.innerHTML = '';
 
   const cardData = [
-    { type: 'upcoming',  year: '2025 → Upcoming', title: 'PhD in Computer Science', org: 'Purdue University · IDEAS Lab · Dr. Aniket Bera', desc: 'Multimodal foundational models and human-AI interaction. Open to research collaborations and industrial internship for summer.', pills: ['Multimodal AI','Human-AI Interaction','Foundational Models'] },
-    { type: 'industry',  year: 'Jul 2025 – Present', title: 'Machine Learning Engineer', org: 'PayGlocal · Fintech Startup', desc: 'Real-time payment risk systems. Led IndiGo merchant onboarding as PA+TSP. Reduced false alerts by 50%+. Implemented time-series forecasting for adaptive thresholds.', pills: ['Time-Series','Risk Modeling','Fintech'] },
+{ type: 'education-phd', year: 'Fall 2026 → Present', title: 'PhD in Computer Science', org: 'Purdue University · IDEAS Lab · Dr. Aniket Bera', desc: 'Researching foundational multimodal AI — building generalizable models at the intersection of perception, language, and embodied intelligence for real-world robotic deployment.', pills: ['Foundational Multimodal Models','Embodied AI','Robotic Deployment','Perception & Language'] },    { type: 'industry',  year: 'Jul 2025 – Present', title: 'Machine Learning Engineer', org: 'PayGlocal · Fintech Startup', desc: 'Real-time payment risk systems. Led IndiGo merchant onboarding as PA+TSP. Reduced false alerts by 50%+. Implemented time-series forecasting for adaptive thresholds.', pills: ['Time-Series','Risk Modeling','Fintech'] },
     { type: 'research',  year: '2024 – 2025', title: 'HCAI Research Assistant · Melange Lab', org: 'IIIT Delhi · Prof. Pushpendra Singh & Prof. Mohan Kumar (RIT)', desc: 'Developed mental health tracker from EDA/PPG signals. Led to NeurIPS 2024 & 2025, ACM IMWUT 2025. Collaboration with CMU & University of Edinburgh.', pills: ['EDA/PPG','Emotion AI','NeurIPS \'24 & \'25','IMWUT \'25'] },
     { type: 'research',  year: '2024 – 2025', title: 'AI Undergrad Researcher · Data Science Lab', org: 'IIIT Delhi · Prof. Mukesh Mohania', desc: 'Developed citation recommendation system using FASIS-based RAG architecture. QR-LLM research ongoing.', pills: ['RAG','Citation Recommendation','NLP'] },
     { type: 'industry',  year: 'Jun – Aug 2024', title: 'MLE Intern', org: 'E.ON Digital Technology', desc: 'Built CI/CD pipeline chatbot for power grid workers using RAG-based framework. Optimized ML & NLP algorithms.', pills: ['RAG','CI/CD','Power Grid'] },
@@ -1770,8 +1976,8 @@ function filterJourney(type, btn) {
     { type: 'education', year: '2021 – 2025', title: 'Bachelor of Technology, Computer Science', org: 'IIIT Delhi', desc: 'Research in Human-Centric AI, HCI, ML. TA for 4 courses. Student Senate & Disciplinary Action Committee. NTSE & KVPY scholar.', pills: ['NTSE Scholar','Student Senate','Teaching Assistant × 4'] },
   ];
 
-  const include = (type === 'research') ? ['research','upcoming'] : (type === 'education') ? ['education','upcoming'] : [type];
-  const typeMap = { research:'type-research', industry:'type-industry', education:'type-education', upcoming:'type-upcoming' };
+const include = (type === 'research') ? ['research','education-phd'] : (type === 'education') ? ['education','education-phd'] : [type];
+const typeMap = { research:'type-research', industry:'type-industry', education:'type-education', 'education-phd':'type-education', upcoming:'type-upcoming' };
   let idx = 0;
   cardData.filter(c => include.includes(c.type)).forEach((c) => {
     const pill = c.pills.map(p => `<span class="jc-pill">${p}</span>`).join('');
@@ -1828,7 +2034,8 @@ function filterPubs(cat, btn) {
 
 /* ═══ UPDATES FILTER ═══ */
 function filterUpdates(type, btn) {
-  document.querySelectorAll('.updates-tag').forEach(t => {
+  // Update active button in whichever filter group was clicked
+  btn.closest('[role="group"]').querySelectorAll('.updates-tag').forEach(t => {
     t.classList.remove('active');
     t.setAttribute('aria-pressed', 'false');
   });
